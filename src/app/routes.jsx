@@ -14,6 +14,8 @@ import { AdminProducts } from './pages/admin/AdminProducts';
 import { AdminOrders } from './pages/admin/AdminOrders';
 import { AdminCategories } from './pages/admin/AdminCategories';
 import { AdminReports } from './pages/admin/AdminReports';
+import { ForgetPassword } from "./pages/ForgetPassword";
+import { Profile } from './pages/Profile';
 
 export const router = createBrowserRouter([
   {
@@ -28,7 +30,10 @@ export const router = createBrowserRouter([
       { path: 'orders', Component: Orders },
       { path: 'orders/:id', Component: OrderDetail },
       { path: 'login', Component: Login },
-      { path: '*', Component: NotFound }
+      { path: '*', Component: NotFound },
+      { path: 'forgot-password', Component: ForgetPassword },
+      { path: 'profile', Component: Profile },
+      { path: 'profile', Component: Profile },
     ]
   },
   {

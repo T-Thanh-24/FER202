@@ -32,7 +32,11 @@ export function Header() {
         <Link to="/" className="brand">
           <div className="brand__logo">
             {logoImage ? (
-              <img src={logoImage} alt="FivePigs Store" style={{ width: 28, height: 28 }} />
+              <img
+                src={logoImage}
+                alt="FivePigs Store"
+                style={{ width: 28, height: 28 }}
+              />
             ) : (
               "🐷"
             )}
@@ -58,7 +62,9 @@ export function Header() {
         <nav className="header__actions">
           {user ? (
             <>
-              <span style={{ fontSize: 13, color: "var(--muted)", fontWeight: 600 }}>
+              <span
+                style={{ fontSize: 13, color: "var(--muted)", fontWeight: 600 }}
+              >
                 Xin chào, {user.name}
               </span>
 
@@ -69,10 +75,22 @@ export function Header() {
                 </button>
               ) : (
                 <>
-                  <button className="btn" onClick={() => navigate("/cart")} style={{ position: "relative" }}>
+                  {/* PROFILE */}
+                  <button className="btn" onClick={() => navigate("/profile")}>
+                    <User size={18} style={{ marginRight: 8 }} />
+                    Hồ sơ
+                  </button>
+
+                  <button
+                    className="btn"
+                    onClick={() => navigate("/cart")}
+                    style={{ position: "relative" }}
+                  >
                     <ShoppingCart size={18} style={{ marginRight: 8 }} />
                     Giỏ hàng
-                    {totalItems > 0 && <span className="cartBadge">{totalItems}</span>}
+                    {totalItems > 0 && (
+                      <span className="cartBadge">{totalItems}</span>
+                    )}
                   </button>
 
                   <button className="btn" onClick={() => navigate("/orders")}>
@@ -88,7 +106,10 @@ export function Header() {
               </button>
             </>
           ) : (
-            <button className="btn btn--primary" onClick={() => navigate("/login")}>
+            <button
+              className="btn btn--primary"
+              onClick={() => navigate("/login")}
+            >
               <User size={18} style={{ marginRight: 8 }} />
               Đăng nhập
             </button>
