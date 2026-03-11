@@ -1,6 +1,6 @@
 import { Link, useParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { useOrders, ORDER_STATUS } from '../contexts/OrderContext';
+import { useOrders} from '../contexts/OrderContext';
 import { Package, Truck, CheckCircle, XCircle, Clock } from 'lucide-react';
 
 export function Orders() {
@@ -18,10 +18,10 @@ export function Orders() {
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('vi-VN', {
       year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
+      month: "",
+      day: "",
+      hour: "2-digit",
+      minute: "2-digit"
     });
   };
 
@@ -175,10 +175,10 @@ export function OrderDetail() {
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('vi-VN', {
       year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
+      month: "",
+      day: "",
+      hour: "",
+      minute: ""
     });
   };
 
@@ -196,7 +196,7 @@ export function OrderDetail() {
   }
 
   const handleCancelOrder = () => {
-    if (confirm('Bạn có chắc muốn hủy đơn hàng này?')) {
+    if (window.confirm('Bạn có chắc muốn hủy đơn hàng này?')) {
       cancelOrder(order.id);
     }
   };

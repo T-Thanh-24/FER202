@@ -8,6 +8,7 @@ import { Checkout } from './pages/Checkout';
 import { Orders, OrderDetail } from './pages/Orders';
 import { Login } from './pages/Login';
 import { NotFound } from './pages/NotFound';
+import { ProductReview } from './pages/ProductReview';
 import { AdminLayout } from './pages/admin/AdminLayout';
 import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { AdminProducts } from './pages/admin/AdminProducts';
@@ -23,6 +24,7 @@ export const router = createBrowserRouter([
       { index: true, Component: Home },
       { path: 'products', Component: Products },
       { path: 'products/:id', Component: ProductDetail },
+      { path: 'products/:id/reviews', Component: ProductReview },
       { path: 'cart', Component: Cart },
       { path: 'checkout', Component: Checkout },
       { path: 'orders', Component: Orders },

@@ -5,17 +5,17 @@ import { Filter, X } from "lucide-react";
 import { useProducts } from "../contexts/ProductContext";
 
 export function Products() {
-  const { products, categories, isLoading } = useProducts();
+  const { products, categories, loading } = useProducts();
 
   const [searchParams, setSearchParams] = useSearchParams();
   const [showFilters, setShowFilters] = useState(true);
 
   const searchQuery = searchParams.get("search") || "";
   const categoryFilter = searchParams.get("category") || "";
-  
+
   // 1. STATE CHÍNH: Lưu khoảng giá đang được áp dụng để lọc
-  const [priceRange, setPriceRange] = useState([0, 10000000]); 
-  
+  const [priceRange, setPriceRange] = useState([0, 10000000]);
+
   // 2. STATE TẠM: Lưu giá trị người dùng đang gõ vào ô input
   const [minPriceInput, setMinPriceInput] = useState("");
   const [maxPriceInput, setMaxPriceInput] = useState("");
@@ -24,11 +24,8 @@ export function Products() {
 
   // 3. HÀM ÁP DỤNG GIÁ
   const handleApplyPrice = () => {
-    // Nếu người dùng để trống, lấy giá trị mặc định là 0 và 10.000.000
     const min = minPriceInput ? Number(minPriceInput) : 0;
     const max = maxPriceInput ? Number(maxPriceInput) : 10000000;
-    
-    // Cập nhật lại state chính để useMemo chạy lại và lọc sản phẩm
     setPriceRange([min, max]);
   };
 
@@ -49,7 +46,7 @@ export function Products() {
       filtered = filtered.filter((p) => p.category === categoryFilter);
     }
 
-    // Price (LỌC THEO GIÁ Ở ĐÂY)
+    // Price Range
     filtered = filtered.filter(
       (p) => p.price >= priceRange[0] && p.price <= priceRange[1]
     );
@@ -76,7 +73,7 @@ export function Products() {
     }
   };
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <p className="text-xl font-semibold text-gray-500">Đang tải sản phẩm...</p>
@@ -139,7 +136,7 @@ export function Products() {
 
                 {categories.map((cat) => (
                   <label
-                    key={cat.id} 
+                    key={cat.id}
                     className="flex items-center gap-2 cursor-pointer mt-2"
                   >
                     <input
@@ -153,7 +150,7 @@ export function Products() {
                 ))}
               </div>
 
-              {/* Price Filter (BỘ LỌC GIÁ MỚI THÊM) */}
+              {/* Price Filter*/}
               <div className="mb-6 border-t pt-4">
                 <h3 className="font-medium mb-3">Khoảng giá</h3>
                 <div className="flex items-center gap-2">
@@ -215,8 +212,7 @@ export function Products() {
                 <p className="text-gray-500 text-lg">
                   Không tìm thấy sản phẩm nào phù hợp với mức giá này.
                 </p>
-                {/* Nút xóa lọc giá nếu không có kết quả */}
-                <button 
+                <button
                   onClick={() => {
                     setMinPriceInput("");
                     setMaxPriceInput("");
