@@ -4,7 +4,8 @@ import { useAuth } from "../contexts/AuthContext";
 import { LogIn, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 // TODO: replace figma asset with local file
-const logoImage = "";
+import logoImage from '../../assets/fivepigslogo.png';
+
 export function Login() {
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({

@@ -14,9 +14,10 @@ export function Checkout() {
 
   const [formData, setFormData] = useState({
     name: user?.name || '',
-    phone: '',
-    address: '',
-    city: '',
+    phone:'',
+    address:'',
+    city:'',
+    postalCode:''
   });
   const [paymentMethod, setPaymentMethod] = useState('cod');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -46,12 +47,6 @@ export function Checkout() {
       return;
     }
 
-    const phoneRegex = /^[0-9]{8,12}$/;
-    if (!phoneRegex.test(formData.phone)) {
-      toast.error('Số điện thoại không hợp lệ (cần 8-12 chữ số)');
-      return;
-    }
-
     setIsProcessing(true);
 
     // Simulate payment processing
@@ -59,11 +54,11 @@ export function Checkout() {
       const orderId = createOrder({
         userId: user.id,
         items,
-        totalPrice: finalTotal,
-        status: 'pending',
-        shippingInfo: formData,
-        paymentMethod,
-        paymentStatus: paymentMethod === 'cod' ? 'pending' : 'completed'
+        totalPrice,
+        status:'',
+        shippingInfo:'',
+        paymentMethod:'',
+        paymentStatus:''
       });
 
       clearCart();
@@ -135,15 +130,27 @@ export function Checkout() {
                       className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Thành phố</label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.city}
-                      onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                      className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Thành phố</label>
+                      <input
+                        type="text"
+                        required
+                        value={formData.city}
+                        onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                        className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Mã bưu điện</label>
+                      <input
+                        type="text"
+                        required
+                        value={formData.postalCode}
+                        onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
+                        className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -190,7 +197,7 @@ export function Checkout() {
             <div className="lg:col-span-1">
               <div className="bg-white rounded-lg shadow-sm p-6 sticky top-24">
                 <h2 className="text-xl font-bold mb-4">Đơn hàng của bạn</h2>
-
+                
                 <div className="space-y-3 mb-4 max-h-64 overflow-y-auto">
                   {items.map(item => (
                     <div key={`${item.product.id}-${item.size}`} className="flex gap-2">

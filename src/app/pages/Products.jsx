@@ -1,14 +1,11 @@
 import { useState, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { ProductCard } from "../components/ProductCard";
-import { Filter, X } from "lucide-react";
-// 1. IMPORT LẠI HOOK TỪ CONTEXT
 import { useProducts } from "../contexts/ProductContext";
+import { Filter, X } from "lucide-react";
 
 export function Products() {
-  // 2. LẤY DỮ LIỆU TỪ CONTEXT CHỈ VỚI 1 DÒNG CODE
-  const { products, categories, isLoading } = useProducts();
-
+  const { products, categories } = useProducts();
   const [searchParams, setSearchParams] = useSearchParams();
   const [showFilters, setShowFilters] = useState(true);
 
@@ -60,15 +57,6 @@ export function Products() {
       setSearchParams({});
     }
   };
-
-  // 3. HIỂN THỊ LOADING NHỜ TRẠNG THÁI LẤY TỪ CONTEXT
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <p className="text-xl font-semibold text-gray-500">Đang tải sản phẩm...</p>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -123,6 +111,22 @@ export function Products() {
                   <span>Tất cả</span>
                 </label>
 
+
+                       {categories.map((cat) => (
+                 <label
+                           key={cat.id}
+                          className="flex items-center gap-2 cursor-pointer mt-2"
+                       >
+                      <input
+                         type="radio"
+                        name="category"
+                       checked={categoryFilter === cat.name}
+                             onChange={() => handleCategoryChange(cat.name)}
+                           />
+                    <span>{cat.name}</span>
+                            </label>
+                        ))}
+
                 {categories.map((cat) => (
                   <label
                     key={cat.id} 
@@ -137,6 +141,7 @@ export function Products() {
                     <span>{cat.name}</span>
                   </label>
                 ))}
+
               </div>
 
               {/* Sort */}
@@ -163,7 +168,7 @@ export function Products() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredProducts.map((product) => (
                   <ProductCard
-                    key={product.id}
+                    key={product.id}   // ✅ FIX KEY CHUẨN 100%
                     product={product}
                   />
                 ))}
