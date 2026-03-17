@@ -136,7 +136,7 @@ export function Products() {
 
                 {categories.map((cat) => (
                   <label
-                    key={cat.id}
+                    key={cat.id} 
                     className="flex items-center gap-2 cursor-pointer mt-2"
                   >
                     <input

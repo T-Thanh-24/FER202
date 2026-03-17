@@ -5,10 +5,20 @@ import { TrendingUp, Shield, Truck, CreditCard } from "lucide-react";
 import "../styles/home.css";
 
 export function Home() {
-  const { products } = useProducts();
+  // Lấy danh sách sản phẩm, danh mục và trạng thái loading từ Context
+  const { products, categories, loading } = useProducts();
+  
+  // Lấy 6 sản phẩm đầu tiên để làm sản phẩm nổi bật
   const featuredProducts = products.slice(0, 6);
 
-  const categories = ["T-Shirts", "Jeans", "Jackets", "Dresses", "Hoodies", "Shirts"];
+  // Hiển thị thông báo trong lúc chờ lấy dữ liệu từ json-server
+  if (loading) {
+    return (
+      <div style={{ textAlign: 'center', padding: '100px 0', fontSize: '1.2rem' }}>
+        Đang tải dữ liệu FivePigs Store...
+      </div>
+    );
+  }
 
   return (
     <div className="home">
@@ -69,9 +79,14 @@ export function Home() {
           </div>
 
           <div className="products__grid">
-            {featuredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
+            {/* Kiểm tra mảng có dữ liệu thì mới hiển thị, tránh lỗi */}
+            {featuredProducts && featuredProducts.length > 0 ? (
+              featuredProducts.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))
+            ) : (
+              <p style={{ gridColumn: '1 / -1', textAlign: 'center' }}>Chưa có sản phẩm nào.</p>
+            )}
           </div>
 
           <div className="center mt-24">
@@ -91,15 +106,23 @@ export function Home() {
           </div>
 
           <div className="categories__grid">
-            {categories.map((category) => (
-              <Link
-                key={category}
-                to={`/products?category=${encodeURIComponent(category)}`}
-                className="category__item"
-              >
-                {category}
-              </Link>
-            ))}
+            {/* Xử lý linh hoạt: Nếu category trong DB là đối tượng {id, name} thì lấy name,
+              nếu là chuỗi chữ bình thường thì lấy thẳng nó.
+            */}
+            {categories && categories.length > 0 && categories.map((category) => {
+              const catName = category.name || category;
+              const catId = category.id || category;
+              
+              return (
+                <Link
+                  key={catId}
+                  to={`/products?category=${encodeURIComponent(catName)}`}
+                  className="category__item"
+                >
+                  {catName}
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>

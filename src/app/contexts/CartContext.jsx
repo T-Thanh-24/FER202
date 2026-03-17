@@ -3,21 +3,15 @@ import { createContext, useContext, useState, useEffect, } from 'react';
 const CartContext = createContext(undefined);
 
 export function CartProvider({ children }) {
-  const [items, setItems] = useState([]);
-
-  useEffect(() => {
-    // Load cart from localStorage
+  const [items, setItems] = useState(() => {
     const savedCart = localStorage.getItem('fivepigs_cart');
-    if (savedCart) {
-      setItems(JSON.parse(savedCart));
-    }
-  }, []);
+    return savedCart ? JSON.parse(savedCart) : [];
+  });
 
+  // Chỉ cần giữ lại useEffect này
   useEffect(() => {
-    // Save cart to localStorage whenever it changes
     localStorage.setItem('fivepigs_cart', JSON.stringify(items));
   }, [items]);
-
   const addToCart = (product, size, quantity) => {
     setItems(currentItems => {
       const existingItemIndex = currentItems.findIndex(

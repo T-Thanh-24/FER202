@@ -11,17 +11,15 @@ export const ORDER_STATUS = {
 };
 
 export function OrderProvider({ children }) {
-  const [orders, setOrders] = useState([]);
-
-  useEffect(() => {
+  const [orders, setOrders] = useState(() => {
     const saved = localStorage.getItem('fivepigs_orders');
-    if (saved) setOrders(JSON.parse(saved));
-  }, []);
+    return saved ? JSON.parse(saved) : [];
+  });
 
   useEffect(() => {
     localStorage.setItem('fivepigs_orders', JSON.stringify(orders));
   }, [orders]);
-
+  
   const createOrder = (orderData) => {
     const newOrder = {
       ...orderData,

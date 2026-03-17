@@ -16,7 +16,7 @@ export function ProductProvider({ children }) {
         // Gọi dữ liệu sản phẩm
         const resProducts = await fetch('http://localhost:9999/products');
         const dataProducts = await resProducts.json();
-
+        
         // Gọi dữ liệu danh mục
         const resCategories = await fetch('http://localhost:9999/categories');
         const dataCategories = await resCategories.json();
@@ -76,7 +76,7 @@ export function ProductProvider({ children }) {
     getReviewsByProductId, // Khai báo thêm ở đây
     addReview              // Khai báo thêm ở đây
   };
-
+  
   return (
     <ProductContext.Provider value={value}>
       {children}
