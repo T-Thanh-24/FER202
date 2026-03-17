@@ -14,6 +14,12 @@ export function AdminLayout() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  useEffect(() => {
+    if (!user || !isAdmin) {
+      navigate('/login');
+    }
+  }, [user, isAdmin, navigate]);
+
   if (!user || !isAdmin) {
     return <Navigate to="/login" replace />;
   }

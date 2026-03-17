@@ -14,10 +14,10 @@ export function Checkout() {
 
   const [formData, setFormData] = useState({
     name: user?.name || '',
-    phone,
-    address,
-    city,
-    postalCode
+    phone:'',
+    address:'',
+    city:'',
+    postalCode:''
   });
   const [paymentMethod, setPaymentMethod] = useState('cod');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -55,10 +55,10 @@ export function Checkout() {
         userId: user.id,
         items,
         totalPrice,
-        status,
-        shippingInfo,
-        paymentMethod,
-        paymentStatus
+        status:'',
+        shippingInfo:'',
+        paymentMethod:'',
+        paymentStatus:''
       });
 
       clearCart();
