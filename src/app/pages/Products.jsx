@@ -3,7 +3,6 @@ import { useSearchParams } from "react-router-dom";
 import { ProductCard } from "../components/ProductCard";
 import { Filter, X } from "lucide-react";
 import { useProducts } from "../contexts/ProductContext";
-import { Filter, X } from "lucide-react";
 
 export function Products() {
   const { products, categories, loading } = useProducts();
@@ -150,22 +149,6 @@ export function Products() {
                     <span>{cat.name}</span>
                             </label>
                         ))}
-
-                {categories.map((cat) => (
-                  <label
-                    key={cat.id} 
-                    className="flex items-center gap-2 cursor-pointer mt-2"
-                  >
-                    <input
-                      type="radio"
-                      name="category"
-                      checked={categoryFilter === cat.name}
-                      onChange={() => handleCategoryChange(cat.name)}
-                    />
-                    <span>{cat.name}</span>
-                  </label>
-                ))}
-
               </div>
 
               {/* Price Filter*/}

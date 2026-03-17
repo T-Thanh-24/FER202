@@ -33,9 +33,7 @@ export const router = createBrowserRouter([
       { path: 'orders', Component: Orders },
       { path: 'orders/:id', Component: OrderDetail },
       { path: 'login', Component: Login },
-      { path: 'forgot-password', Component: ForgetPassword },
-      { path: 'profile', Component: Profile },
-      { path: '*', Component: NotFound },
+      { path: '*', Component: NotFound }
     ],
   },
   {

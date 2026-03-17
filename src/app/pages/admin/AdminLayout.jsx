@@ -8,7 +8,7 @@ import {
   BarChart3,
   LogOut,
 } from "lucide-react";
-
+import { useEffect, useState } from 'react';
 export function AdminLayout() {
   const { user, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
