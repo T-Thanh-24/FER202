@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useProducts } from "../../contexts/ProductContext";
 import { Plus, Edit, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
@@ -8,6 +8,18 @@ export function AdminProducts() {
 
   const [showForm, setShowForm] = useState(false);
   const [editingProductId, setEditingProductId] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const ITEMS_PER_PAGE = 8;
+
+  const categoryList = [
+    { id: 1, name: "T-Shirts" },
+    { id: 2, name: "Jeans" },
+    { id: 3, name: "Jackets" },
+    { id: 4, name: "Dresses" },
+    { id: 5, name: "Hoodies" },
+    { id: 6, name: "Shirts" },
+  ];
 
   const [formData, setFormData] = useState({
     name: "",
@@ -18,6 +30,19 @@ export function AdminProducts() {
     stock: "",
     image: "",
   });
+
+  const totalPages = Math.ceil(products.length / ITEMS_PER_PAGE);
+
+  const paginatedProducts = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    return products.slice(startIndex, endIndex);
+  }, [products, currentPage]);
+
+  const goToPage = (page) => {
+    if (page < 1 || page > totalPages) return;
+    setCurrentPage(page);
+  };
 
   const resetForm = () => {
     setFormData({
@@ -33,11 +58,11 @@ export function AdminProducts() {
     setShowForm(false);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const productData = {
-      id: editingProductId ? editingProductId : Date.now(),
+      id: editingProductId ? editingProductId : String(Date.now()),
       name: formData.name,
       description: formData.description,
       price: Number(formData.price) || 0,
@@ -50,19 +75,26 @@ export function AdminProducts() {
       image: formData.image || "https://via.placeholder.com/300x200?text=Product",
     };
 
-    if (editingProductId) {
-      updateProduct(editingProductId, productData);
-      toast.success("Cập nhật sản phẩm thành công!");
-    } else {
-      addProduct(productData);
-      toast.success("Thêm sản phẩm thành công!");
-    }
+    try {
+      if (editingProductId) {
+        await updateProduct(editingProductId, productData);
+        toast.success("Cập nhật sản phẩm thành công!");
+      } else {
+        await addProduct(productData);
+        toast.success("Thêm sản phẩm thành công!");
 
-    resetForm();
+        const newTotalPages = Math.ceil((products.length + 1) / ITEMS_PER_PAGE);
+        setCurrentPage(newTotalPages);
+      }
+
+      resetForm();
+    } catch (error) {
+      toast.error(error.message || "Có lỗi xảy ra!");
+    }
   };
 
   const handleEdit = (productId) => {
-    const product = products.find((p) => p.id === productId);
+    const product = products.find((p) => String(p.id) === String(productId));
     if (!product) return;
 
     setFormData({
@@ -79,10 +111,24 @@ export function AdminProducts() {
     setShowForm(true);
   };
 
-  const handleDelete = (productId) => {
-    if (window.confirm("Bạn có chắc muốn xóa sản phẩm này?")) {
-      deleteProduct(productId);
+  const handleDelete = async (productId) => {
+    if (!window.confirm("Bạn có chắc muốn xóa sản phẩm này?")) return;
+
+    try {
+      await deleteProduct(productId);
+
+      const remainingProducts = products.length - 1;
+      const newTotalPages = Math.ceil(remainingProducts / ITEMS_PER_PAGE);
+
+      if (remainingProducts === 0) {
+        setCurrentPage(1);
+      } else if (currentPage > newTotalPages) {
+        setCurrentPage(newTotalPages);
+      }
+
       toast.success("Xóa sản phẩm thành công!");
+    } catch (error) {
+      toast.error("Xóa sản phẩm thất bại!");
     }
   };
 
@@ -102,6 +148,15 @@ export function AdminProducts() {
           onClick={() => {
             setShowForm(true);
             setEditingProductId(null);
+            setFormData({
+              name: "",
+              description: "",
+              price: "",
+              category: "",
+              sizes: "",
+              stock: "",
+              image: "",
+            });
           }}
           className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
         >
@@ -110,7 +165,6 @@ export function AdminProducts() {
         </button>
       </div>
 
-      {/* Form Modal */}
       {showForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
@@ -167,7 +221,7 @@ export function AdminProducts() {
                     className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">Chọn danh mục</option>
-                    {categories.map((cat) => (
+                    {categoryList.map((cat) => (
                       <option key={cat.id} value={cat.name}>
                         {cat.name}
                       </option>
@@ -215,7 +269,10 @@ export function AdminProducts() {
               </div>
 
               <div className="flex gap-4 pt-4">
-                <button type="submit" className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">
+                <button
+                  type="submit"
+                  className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
+                >
                   {editingProductId ? "Cập nhật" : "Thêm mới"}
                 </button>
                 <button
@@ -231,7 +288,6 @@ export function AdminProducts() {
         </div>
       )}
 
-      {/* Products Table */}
       <div className="bg-white rounded-lg shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -247,7 +303,7 @@ export function AdminProducts() {
             </thead>
 
             <tbody>
-              {products.map((product) => (
+              {paginatedProducts.map((product) => (
                 <tr key={product.id} className="border-b hover:bg-gray-50">
                   <td className="py-3 px-4">
                     <img
@@ -269,13 +325,12 @@ export function AdminProducts() {
 
                   <td className="py-3 px-4">
                     <span
-                      className={`px-2 py-1 rounded-full text-xs ${
-                        product.stock > 20
+                      className={`px-2 py-1 rounded-full text-xs ${product.stock > 20
                           ? "bg-green-100 text-green-800"
                           : product.stock > 0
-                          ? "bg-yellow-100 text-yellow-800"
-                          : "bg-red-100 text-red-800"
-                      }`}
+                            ? "bg-yellow-100 text-yellow-800"
+                            : "bg-red-100 text-red-800"
+                        }`}
                     >
                       {product.stock}
                     </span>
@@ -311,6 +366,63 @@ export function AdminProducts() {
             </tbody>
           </table>
         </div>
+
+        {products.length > 0 && (
+          <div className="flex items-center justify-between px-4 py-4 border-t bg-white">
+            <div className="text-sm text-gray-600">
+              Hiển thị{" "}
+              <span className="font-medium">
+                {(currentPage - 1) * ITEMS_PER_PAGE + 1}
+              </span>
+              {" - "}
+              <span className="font-medium">
+                {Math.min(currentPage * ITEMS_PER_PAGE, products.length)}
+              </span>
+              {" / "}
+              <span className="font-medium">{products.length}</span> sản phẩm
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => goToPage(currentPage - 1)}
+                disabled={currentPage === 1}
+                className={`px-3 py-2 rounded-lg border text-sm ${
+                  currentPage === 1
+                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                    : "bg-white hover:bg-gray-50 text-gray-700"
+                }`}
+              >
+                Trước
+              </button>
+
+              {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => goToPage(page)}
+                  className={`w-10 h-10 rounded-lg text-sm border ${
+                    currentPage === page
+                      ? "bg-blue-600 text-white border-blue-600"
+                      : "bg-white text-gray-700 hover:bg-gray-50"
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+
+              <button
+                onClick={() => goToPage(currentPage + 1)}
+                disabled={currentPage === totalPages || totalPages === 0}
+                className={`px-3 py-2 rounded-lg border text-sm ${
+                  currentPage === totalPages || totalPages === 0
+                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                    : "bg-white hover:bg-gray-50 text-gray-700"
+                }`}
+              >
+                Sau
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

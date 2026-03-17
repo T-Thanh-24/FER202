@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { ProductCard } from "../components/ProductCard";
 import { Filter, X } from "lucide-react";
 import { useProducts } from "../contexts/ProductContext";
+import { Filter, X } from "lucide-react";
 
 export function Products() {
   const { products, categories, loading } = useProducts();
@@ -134,6 +135,22 @@ export function Products() {
                   <span>Tất cả</span>
                 </label>
 
+
+                       {categories.map((cat) => (
+                 <label
+                           key={cat.id}
+                          className="flex items-center gap-2 cursor-pointer mt-2"
+                       >
+                      <input
+                         type="radio"
+                        name="category"
+                       checked={categoryFilter === cat.name}
+                             onChange={() => handleCategoryChange(cat.name)}
+                           />
+                    <span>{cat.name}</span>
+                            </label>
+                        ))}
+
                 {categories.map((cat) => (
                   <label
                     key={cat.id} 
@@ -148,6 +165,7 @@ export function Products() {
                     <span>{cat.name}</span>
                   </label>
                 ))}
+
               </div>
 
               {/* Price Filter*/}
@@ -202,7 +220,7 @@ export function Products() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredProducts.map((product) => (
                   <ProductCard
-                    key={product.id}
+                    key={product.id}   // ✅ FIX KEY CHUẨN 100%
                     product={product}
                   />
                 ))}

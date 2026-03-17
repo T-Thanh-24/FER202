@@ -1,41 +1,121 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { ProductService } from '../services/ProductService';
 
 const ProductContext = createContext();
 
 export function ProductProvider({ children }) {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
-  // Thêm state loading để lúc dữ liệu đang tải, web không bị giật hoặc lỗi
   const [loading, setLoading] = useState(true);
 
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const [productsData, categoriesData] = await Promise.all([
+        ProductService.getProducts(),
+        ProductService.getCategories(),
+      ]);
+
+      setProducts(productsData || []);
+      setCategories(categoriesData || []);
+    } catch (error) {
+      console.error('Load products/categories failed:', error);
+      setProducts([]);
+      setCategories([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    // Hàm gọi API từ json-server
-    const fetchFivePigsData = async () => {
-      try {
-        setLoading(true);
-        // Gọi dữ liệu sản phẩm
-        const resProducts = await fetch('http://localhost:9999/products');
-        const dataProducts = await resProducts.json();
-        
-        // Gọi dữ liệu danh mục
-        const resCategories = await fetch('http://localhost:9999/categories');
-        const dataCategories = await resCategories.json();
-
-        // Cập nhật vào kho chứa chung
-        setProducts(dataProducts);
-        setCategories(dataCategories);
-      } catch (error) {
-        console.error("Lỗi khi tải dữ liệu từ database.json:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchFivePigsData();
+    loadData();
   }, []);
 
-  // Giữ nguyên hàm này để trang ProductDetail vẫn tìm được sản phẩm
-  const getProduct = (id) => products.find((p) => String(p.id) === String(id));
+  const getProduct = (id) => {
+    return products.find((p) => String(p.id) === String(id));
+  };
+
+  const addProduct = async (productData) => {
+    const created = await ProductService.createProduct({
+      ...productData,
+      id: String(productData.id),
+      rating: Number(productData.rating || 0),
+      reviews: Number(productData.reviews || 0),
+    });
+
+    setProducts((prev) => [...prev, created]);
+    return created;
+  };
+
+  const updateProduct = async (productId, productData) => {
+    const updated = await ProductService.updateProduct(productId, {
+      ...productData,
+      id: String(productId),
+      rating: Number(productData.rating || 0),
+      reviews: Number(productData.reviews || 0),
+    });
+
+    setProducts((prev) =>
+      prev.map((item) =>
+        String(item.id) === String(productId) ? updated : item
+      )
+    );
+
+    return updated;
+  };
+
+  const deleteProduct = async (productId) => {
+    await ProductService.deleteProduct(productId);
+    setProducts((prev) =>
+      prev.filter((item) => String(item.id) !== String(productId))
+    );
+  };
+
+  const addCategory = async (categoryName) => {
+    const existed = categories.some(
+      (item) =>
+        item.name.trim().toLowerCase() === categoryName.trim().toLowerCase()
+    );
+
+    if (existed) {
+      throw new Error('Danh mục đã tồn tại');
+    }
+
+    const newCategory = {
+      id: Date.now().toString(),
+      name: categoryName.trim(),
+    };
+
+    const created = await ProductService.createCategory(newCategory);
+    setCategories((prev) => [...prev, created]);
+    return created;
+  };
+
+  const deleteCategory = async (categoryId) => {
+    await ProductService.deleteCategory(categoryId);
+    setCategories((prev) =>
+      prev.filter((item) => String(item.id) !== String(categoryId))
+    );
+  };
+
+  const categoryNames = useMemo(
+    () => categories.map((item) => item.name),
+    [categories]
+  );
+
+  const value = {
+    loading,
+    products,
+    categories,
+    categoryNames,
+    getProduct,
+    loadData,
+    addProduct,
+    updateProduct,
+    deleteProduct,
+    addCategory,
+    deleteCategory,
+  };
 
   // 1. Hàm lấy danh sách đánh giá theo ID sản phẩm
   const getReviewsByProductId = async (productId) => {
@@ -84,9 +164,10 @@ export function ProductProvider({ children }) {
   );
 }
 
-// Giữ nguyên custom hook của bạn
 export function useProducts() {
   const ctx = useContext(ProductContext);
-  if (!ctx) throw new Error('useProducts must be used within a ProductProvider');
+  if (!ctx) {
+    throw new Error('useProducts must be used within a ProductProvider');
+  }
   return ctx;
 }
