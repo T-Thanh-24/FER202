@@ -74,7 +74,6 @@ export function AdminLayout() {
               {navItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = location.pathname === item.path;
-
                 return (
                   <li key={item.path}>
                     <Link

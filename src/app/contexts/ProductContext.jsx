@@ -20,6 +20,8 @@ export function ProductProvider({ children }) {
       setCategories(categoriesData || []);
     } catch (error) {
       console.error('Load products/categories failed:', error);
+      setProducts([]);
+      setCategories([]);
     } finally {
       setLoading(false);
     }
@@ -71,7 +73,8 @@ export function ProductProvider({ children }) {
 
   const addCategory = async (categoryName) => {
     const existed = categories.some(
-      (item) => item.name.trim().toLowerCase() === categoryName.trim().toLowerCase()
+      (item) =>
+        item.name.trim().toLowerCase() === categoryName.trim().toLowerCase()
     );
 
     if (existed) {

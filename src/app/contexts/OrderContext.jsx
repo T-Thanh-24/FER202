@@ -60,7 +60,8 @@ export function OrderProvider({ children }) {
 
   const getOrder = (orderId) => orders.find((o) => o.id === orderId);
 
-  const cancelOrder = (orderId) => updateOrderStatus(orderId, ORDER_STATUS.CANCELLED);
+  const cancelOrder = (orderId) =>
+    updateOrderStatus(orderId, ORDER_STATUS.CANCELLED);
 
   return (
     <OrderContext.Provider
