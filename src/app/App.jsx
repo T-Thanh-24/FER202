@@ -6,6 +6,7 @@ import { CartProvider } from './contexts/CartContext';
 import { OrderProvider } from './contexts/OrderContext';
 import { Toaster } from 'sonner';
 
+
 export default function App() {
   return (
     <AuthProvider>

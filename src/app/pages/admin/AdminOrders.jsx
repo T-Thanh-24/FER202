@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useOrders, OrderStatus } from '../../contexts/OrderContext';
+import { useOrders } from '../../contexts/OrderContext';
 import { Eye } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -10,32 +10,30 @@ export function AdminOrders() {
   const formatPrice = (price) => {
     return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
-      currency: 'VND'
-    }).format(price);
+      currency: 'VND',
+    }).format(price || 0);
   };
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('vi-VN', {
-      year: 'numeric',
-      month,
-      day,
-      hour,
-      minute
-    });
+    if (!dateString) return '-';
+    return new Date(dateString).toLocaleString('vi-VN');
   };
 
-  const handleStatusChange = (orderId, newStatus) => {
-    updateOrderStatus(orderId, newStatus);
-    toast.success('Cập nhật trạng thái đơn hàng thành công!');
+  const handleStatusChange = async (orderId, newStatus) => {
+    try {
+      await updateOrderStatus(orderId, newStatus);
+      toast.success('Cập nhật trạng thái đơn hàng thành công!');
+    } catch (error) {
+      toast.error('Cập nhật trạng thái thất bại!');
+    }
   };
 
-  const selectedOrderData = orders.find(o => o.id === selectedOrder);
+  const selectedOrderData = orders.find((o) => o.id === selectedOrder);
 
   return (
     <div>
       <h1 className="text-3xl font-bold mb-8">Quản lý đơn hàng</h1>
 
-      {/* Order Detail Modal */}
       {selectedOrderData && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
@@ -56,10 +54,10 @@ export function AdminOrders() {
               <div>
                 <h3 className="font-semibold mb-2">Thông tin khách hàng</h3>
                 <div className="bg-gray-50 p-4 rounded-lg">
-                  <p className="font-medium">{selectedOrderData.shippingInfo.name}</p>
-                  <p className="text-sm text-gray-600">{selectedOrderData.shippingInfo.phone}</p>
+                  <p className="font-medium">{selectedOrderData.shippingInfo?.name || '-'}</p>
+                  <p className="text-sm text-gray-600">{selectedOrderData.shippingInfo?.phone || '-'}</p>
                   <p className="text-sm text-gray-600">
-                    {selectedOrderData.shippingInfo.address}, {selectedOrderData.shippingInfo.city}, {selectedOrderData.shippingInfo.postalCode}
+                    {selectedOrderData.shippingInfo?.address || '-'}, {selectedOrderData.shippingInfo?.city || '-'}, {selectedOrderData.shippingInfo?.postalCode || '-'}
                   </p>
                 </div>
               </div>
@@ -67,20 +65,20 @@ export function AdminOrders() {
               <div>
                 <h3 className="font-semibold mb-2">Sản phẩm</h3>
                 <div className="space-y-3">
-                  {selectedOrderData.items.map((item, index) => (
+                  {(selectedOrderData.items || []).map((item, index) => (
                     <div key={index} className="flex gap-4 bg-gray-50 p-3 rounded-lg">
                       <img
-                        src={item.product.image}
-                        alt={item.product.name}
+                        src={item.product?.image}
+                        alt={item.product?.name}
                         className="w-16 h-16 object-cover rounded"
                       />
                       <div className="flex-1">
-                        <p className="font-medium">{item.product.name}</p>
+                        <p className="font-medium">{item.product?.name}</p>
                         <p className="text-sm text-gray-600">
                           Size: {item.size} × {item.quantity}
                         </p>
                         <p className="text-blue-600 font-semibold">
-                          {formatPrice(item.product.price * item.quantity)}
+                          {formatPrice((item.product?.price || 0) * (item.quantity || 0))}
                         </p>
                       </div>
                     </div>
@@ -121,7 +119,6 @@ export function AdminOrders() {
         </div>
       )}
 
-      {/* Orders Table */}
       <div className="bg-white rounded-lg shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -136,18 +133,19 @@ export function AdminOrders() {
                 <th className="text-left py-3 px-4">Thao tác</th>
               </tr>
             </thead>
+
             <tbody>
-              {orders.map(order => (
+              {orders.map((order) => (
                 <tr key={order.id} className="border-b hover:bg-gray-50">
                   <td className="py-3 px-4 font-medium">{order.id}</td>
                   <td className="py-3 px-4">
                     <div>
-                      <p className="font-medium">{order.shippingInfo.name}</p>
-                      <p className="text-sm text-gray-600">{order.shippingInfo.phone}</p>
+                      <p className="font-medium">{order.shippingInfo?.name || '-'}</p>
+                      <p className="text-sm text-gray-600">{order.shippingInfo?.phone || '-'}</p>
                     </div>
                   </td>
                   <td className="py-3 px-4">
-                    <p className="text-sm">{order.items.length} sản phẩm</p>
+                    <p className="text-sm">{order.items?.length || 0} sản phẩm</p>
                   </td>
                   <td className="py-3 px-4 font-semibold">{formatPrice(order.totalPrice)}</td>
                   <td className="py-3 px-4">
@@ -155,11 +153,15 @@ export function AdminOrders() {
                       value={order.status}
                       onChange={(e) => handleStatusChange(order.id, e.target.value)}
                       className={`px-2 py-1 rounded-full text-xs border-none ${
-                        order.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
-                        order.status === 'Confirmed' ? 'bg-blue-100 text-blue-800' :
-                        order.status === 'Shipped' ? 'bg-purple-100 text-purple-800' :
-                        order.status === 'Delivered' ? 'bg-green-100 text-green-800' :
-                        'bg-red-100 text-red-800'
+                        order.status === 'Pending'
+                          ? 'bg-yellow-100 text-yellow-800'
+                          : order.status === 'Confirmed'
+                          ? 'bg-blue-100 text-blue-800'
+                          : order.status === 'Shipped'
+                          ? 'bg-purple-100 text-purple-800'
+                          : order.status === 'Delivered'
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-red-100 text-red-800'
                       }`}
                     >
                       <option value="Pending">Pending</option>
@@ -169,9 +171,7 @@ export function AdminOrders() {
                       <option value="Cancelled">Cancelled</option>
                     </select>
                   </td>
-                  <td className="py-3 px-4 text-sm">
-                    {formatDate(order.createdAt)}
-                  </td>
+                  <td className="py-3 px-4 text-sm">{formatDate(order.createdAt)}</td>
                   <td className="py-3 px-4">
                     <button
                       onClick={() => setSelectedOrder(order.id)}

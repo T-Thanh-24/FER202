@@ -1,40 +1,55 @@
 import { createContext, useContext, useEffect, useState } from 'react';
+import { OrderService } from '../services/OrderService';
 
 const OrderContext = createContext();
 
 export const ORDER_STATUS = {
   PENDING: 'Pending',
-  PAID: 'Paid',
-  SHIPPING: 'Shipping',
+  CONFIRMED: 'Confirmed',
+  SHIPPED: 'Shipped',
   DELIVERED: 'Delivered',
-  CANCELLED: 'Cancelled'
+  CANCELLED: 'Cancelled',
 };
 
 export function OrderProvider({ children }) {
   const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const saved = localStorage.getItem('fivepigs_orders');
-    if (saved) setOrders(JSON.parse(saved));
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem('fivepigs_orders', JSON.stringify(orders));
-  }, [orders]);
-
-  const createOrder = (orderData) => {
-    const newOrder = {
-      ...orderData,
-      id: 'ORD-' + Date.now(),
-      createdAt: new Date().toISOString(),
-      status: orderData.status || ORDER_STATUS.PENDING
-    };
-    setOrders((prev) => [...prev, newOrder]);
-    return newOrder.id;
+  const loadOrders = async () => {
+    try {
+      setLoading(true);
+      const data = await OrderService.getOrders();
+      setOrders(data || []);
+    } catch (error) {
+      console.error('Load orders failed:', error);
+      setOrders([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const updateOrderStatus = (orderId, status) => {
-    setOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, status } : o)));
+  useEffect(() => {
+    loadOrders();
+  }, []);
+
+  const createOrder = async (orderData) => {
+    const newOrder = {
+      ...orderData,
+      id: `ORD-${Date.now()}`,
+      createdAt: new Date().toISOString(),
+      status: orderData.status || ORDER_STATUS.PENDING,
+    };
+
+    const created = await OrderService.createOrder(newOrder);
+    setOrders((prev) => [...prev, created]);
+    return created.id;
+  };
+
+  const updateOrderStatus = async (orderId, status) => {
+    await OrderService.updateOrderStatus(orderId, status);
+    setOrders((prev) =>
+      prev.map((o) => (o.id === orderId ? { ...o, status } : o))
+    );
   };
 
   const getUserOrders = (userId) => {
@@ -48,7 +63,18 @@ export function OrderProvider({ children }) {
   const cancelOrder = (orderId) => updateOrderStatus(orderId, ORDER_STATUS.CANCELLED);
 
   return (
-    <OrderContext.Provider value={{ orders, createOrder, updateOrderStatus, getUserOrders, getOrder, cancelOrder }}>
+    <OrderContext.Provider
+      value={{
+        loading,
+        orders,
+        loadOrders,
+        createOrder,
+        updateOrderStatus,
+        getUserOrders,
+        getOrder,
+        cancelOrder,
+      }}
+    >
       {children}
     </OrderContext.Provider>
   );
@@ -56,6 +82,8 @@ export function OrderProvider({ children }) {
 
 export function useOrders() {
   const ctx = useContext(OrderContext);
-  if (!ctx) throw new Error('useOrders must be used within an OrderProvider');
+  if (!ctx) {
+    throw new Error('useOrders must be used within an OrderProvider');
+  }
   return ctx;
 }

@@ -111,20 +111,20 @@ export function Products() {
                   <span>Tất cả</span>
                 </label>
 
-                {categories.map((cat) => (
-                  <label
-                    key={cat}   // ✅ FIX KEY Ở ĐÂY
-                    className="flex items-center gap-2 cursor-pointer mt-2"
-                  >
-                    <input
-                      type="radio"
-                      name="category"
-                      checked={categoryFilter === cat}
-                      onChange={() => handleCategoryChange(cat)}
-                    />
-                    <span>{cat}</span>
-                  </label>
-                ))}
+                       {categories.map((cat) => (
+                 <label
+                           key={cat.id}
+                          className="flex items-center gap-2 cursor-pointer mt-2"
+                       >
+                      <input
+                         type="radio"
+                        name="category"
+                       checked={categoryFilter === cat.name}
+                             onChange={() => handleCategoryChange(cat.name)}
+                           />
+                    <span>{cat.name}</span>
+                            </label>
+                        ))}
               </div>
 
               {/* Sort */}
