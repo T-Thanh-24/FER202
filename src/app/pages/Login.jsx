@@ -9,8 +9,8 @@ export function Login() {
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
     email: '',
-    password,
-    name
+    password: '',
+    name: ''
   });
   const { login, register } = useAuth();
   const navigate = useNavigate();
