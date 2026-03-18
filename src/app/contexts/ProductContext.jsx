@@ -37,8 +37,45 @@ export function ProductProvider({ children }) {
   // Giữ nguyên hàm này để trang ProductDetail vẫn tìm được sản phẩm
   const getProduct = (id) => products.find((p) => String(p.id) === String(id));
 
-  // Truyền thêm loading ra ngoài để các trang biết lúc nào dữ liệu tải xong
-  const value = { products, setProducts, categories, getProduct, loading };
+  // 1. Hàm lấy danh sách đánh giá theo ID sản phẩm
+  const getReviewsByProductId = async (productId) => {
+    try {
+      // Ép kiểu productId sang String để khớp với database của bạn
+      const res = await fetch(`http://localhost:9999/reviews?productId=${String(productId)}`);
+      return await res.json();
+    } catch (error) {
+      console.error("Lỗi khi lấy đánh giá:", error);
+      return []; // Nếu lỗi, trả về mảng rỗng để web không bị crash
+    }
+  };
+
+  // 2. Hàm thêm một đánh giá mới vào database
+  const addReview = async (newReview) => {
+    try {
+      const res = await fetch(`http://localhost:9999/reviews`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newReview)
+      });
+      return await res.json(); // json-server sẽ tự động thêm 'id' và trả về object vừa tạo
+    } catch (error) {
+      console.error("Lỗi khi gửi đánh giá:", error);
+      return null;
+    }
+  };
+
+  // Truyền thêm 2 hàm mới vào value
+  const value = {
+    products,
+    setProducts,
+    categories,
+    getProduct,
+    loading,
+    getReviewsByProductId, // Khai báo thêm ở đây
+    addReview              // Khai báo thêm ở đây
+  };
   
   return (
     <ProductContext.Provider value={value}>

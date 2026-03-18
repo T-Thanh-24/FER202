@@ -4,7 +4,9 @@ import { useAuth } from "../contexts/AuthContext";
 import { useCart } from "../contexts/CartContext";
 import { useState } from "react";
 
-const logoImage = "";
+// Nếu bạn có logo local, import ở đây:
+// import logoImage from "../assets/logo.png";
+const logoImage = ""; // để trống vẫn chạy
 
 export function Header() {
   const { user, logout, isAdmin } = useAuth();
@@ -21,14 +23,6 @@ export function Header() {
     e.preventDefault();
     const q = searchQuery.trim();
     if (q) navigate(`/products?search=${encodeURIComponent(q)}`);
-  };
-
-  // Style để ép icon và chữ nằm trên 1 dòng
-  const flexRowStyle = {
-    display: "flex",
-    alignItems: "center",
-    gap: "6px",
-    whiteSpace: "nowrap",
   };
 
   return (
@@ -75,49 +69,39 @@ export function Header() {
               </span>
 
               {isAdmin ? (
-                <button
-                  className="btn"
-                  onClick={() => navigate("/admin")}
-                  style={flexRowStyle}
-                >
-                  <LayoutDashboard size={18} />
+                <button className="btn" onClick={() => navigate("/admin")}>
+                  <LayoutDashboard size={18} style={{ marginRight: 8 }} />
                   Admin
                 </button>
               ) : (
                 <>
+                  {/* PROFILE */}
                   <button className="btn" onClick={() => navigate("/profile")}>
                     <User size={18} style={{ marginRight: 8 }} />
                     Hồ sơ
                   </button>
+
                   <button
                     className="btn"
                     onClick={() => navigate("/cart")}
-                    style={{ ...flexRowStyle, position: "relative" }}
+                    style={{ position: "relative" }}
                   >
-                    <ShoppingCart size={18} />
+                    <ShoppingCart size={18} style={{ marginRight: 8 }} />
                     Giỏ hàng
                     {totalItems > 0 && (
                       <span className="cartBadge">{totalItems}</span>
                     )}
                   </button>
 
-                  <button
-                    className="btn"
-                    onClick={() => navigate("/orders")}
-                    style={flexRowStyle}
-                  >
-                    <User size={18} />
+                  <button className="btn" onClick={() => navigate("/orders")}>
+                    <User size={18} style={{ marginRight: 8 }} />
                     Đơn hàng
                   </button>
                 </>
               )}
 
-              <button
-                className="btn"
-                onClick={handleLogout}
-                style={flexRowStyle}
-              >
-                <LogOut size={18} />
+              <button className="btn" onClick={handleLogout}>
+                <LogOut size={18} style={{ marginRight: 8 }} />
                 Đăng xuất
               </button>
             </>
@@ -125,9 +109,8 @@ export function Header() {
             <button
               className="btn btn--primary"
               onClick={() => navigate("/login")}
-              style={flexRowStyle}
             >
-              <User size={18} />
+              <User size={18} style={{ marginRight: 8 }} />
               Đăng nhập
             </button>
           )}

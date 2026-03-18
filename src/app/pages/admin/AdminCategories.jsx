@@ -24,7 +24,7 @@ export function AdminCategories() {
       toast.error('Không thể xóa danh mục có sản phẩm');
       return;
     }
-    if (confirm('Bạn có chắc muốn xóa danh mục này?')) {
+    if (!window.confirm(`Bạn có chắc muốn xóa danh mục "${categoryName}" không?`)) {
       deleteCategory(categoryId);
       toast.success('Xóa danh mục thành công!');
     }

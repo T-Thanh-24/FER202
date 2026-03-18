@@ -250,5 +250,73 @@
       "rating": 4.7,
       "reviews": 178
     }
-  ]
+  ],
+  "reviews": [
+    {
+      "id": "1",
+      "productId": "1",
+      "author": "Trần Minh H.",
+      "rating": 5,
+      "date": "10/03/2026",
+      "content": "Áo mặc rất thích, vải mịn, form đẹp. Sẽ mua thêm màu khác. Giao hàng cũng rất nhanh chóng.",
+      "images": [
+        "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=200&auto=format&fit=crop&q=60"
+      ]
+    },
+    {
+      "id": "2",
+      "productId": 1,
+      "author": "Lê Thị P.",
+      "rating": 4,
+      "date": "08/03/2026",
+      "content": "Áo đẹp nhưng size L hơi rộng một chút so với mình. Chất lượng vải thì ok, không bị xù lông sau khi giặt.",
+      "images": []
+    },
+    {
+      "id": "3",
+      "productId": "2",
+      "author": "Nguyễn Văn T.",
+      "rating": 5,
+      "date": "09/03/2026",
+      "content": "Form áo chuẩn oversize luôn, mặc bao ngầu. Mình m65 nặng 55kg mặc size M vừa đẹp nha mọi người.",
+      "images": []
+    },
+    {
+      "id": "c67f",
+      "productId": "1",
+      "author": "hiep",
+      "rating": 5,
+      "date": "10/3/2026",
+      "content": "hay",
+      "images": []
+    },
+    {
+      "id": "3413",
+      "productId": 1,
+      "author": "hiep",
+      "rating": 4,
+      "date": "10/3/2026",
+      "content": "sán phẩm tốt",
+      "images": []
+    },
+    {
+      "id": "3c28",
+      "productId": 1,
+      "author": "hiep",
+      "rating": 3,
+      "date": "10/3/2026",
+      "content": "sản phẩm tốt\n",
+      "images": []
+    },
+    {
+      "id": "afce",
+      "productId": "1",
+      "author": "hiep",
+      "rating": 4,
+      "date": "10/3/2026",
+      "content": "hay\n",
+      "images": []
+    }
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
 }

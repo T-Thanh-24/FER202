@@ -3,8 +3,9 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { LogIn, UserPlus } from "lucide-react";
 import { toast } from "sonner";
-import LogoImg from '../../assets/5f9eebaa05a3972bdba63e8eb27e9beea907ac32.png';
+
 // TODO: replace figma asset with local file
+import logoImage from '../../assets/fivepigslogo.png';
 
 export function Login() {
   const [isLogin, setIsLogin] = useState(true);
@@ -57,7 +58,7 @@ export function Login() {
         {/* Logo */}
         <div className="text-center mb-8">
           <img
-            src={LogoImg}
+            src={logoImage}
             alt="FivePigs Store"
             className="h-16 w-16 mx-auto mb-4"
           />

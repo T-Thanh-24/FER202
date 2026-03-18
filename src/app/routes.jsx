@@ -3,6 +3,7 @@ import { Layout } from "./components/Layout";
 import { Home } from "./pages/Home";
 import { Products } from "./pages/Products";
 import { ProductDetail } from "./pages/ProductDetail";
+import { ProductReview } from './pages/ProductReview';
 import { Cart } from "./pages/Cart";
 import { Checkout } from "./pages/Checkout";
 import { Orders } from "./pages/Orders";
@@ -25,6 +26,7 @@ export const router = createBrowserRouter([
       { index: true, Component: Home },
       { path: "products", Component: Products },
       { path: "products/:id", Component: ProductDetail },
+      { path: 'products/:id/reviews', Component: ProductReview },
       { path: "cart", Component: Cart },
       { path: "checkout", Component: Checkout },
       { path: "orders", Component: Orders },
@@ -46,4 +48,4 @@ export const router = createBrowserRouter([
       { path: "reports", Component: AdminReports },
     ],
   },
-]);
+]);  

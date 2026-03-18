@@ -18,7 +18,7 @@ export function AdminReports() {
     {
       name: 'Đã giao',
       value: orders
-  .filter((o) => o.status === "Delivered")
+  .filter((o) => o.status === "Shipped")
   .reduce((sum, o) => sum + (o.totalPrice || 0), 0),
     },
     {
@@ -36,7 +36,7 @@ export function AdminReports() {
     {
       name: 'Chờ xử lý',
       value: orders
-  .filter((o) => o.status === "Awaiting processing")
+  .filter((o) => o.status === "Pending")
   .reduce((sum, o) => sum + (o.totalPrice || 0), 0),
     }
   ];
