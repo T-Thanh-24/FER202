@@ -37,6 +37,7 @@ export function AdminLayout() {
     { path: "/admin/reports", label: "Báo cáo", icon: BarChart3 },
   ];
 
+
   return (
     <div className="min-h-screen bg-gray-100">
 
@@ -78,6 +79,7 @@ export function AdminLayout() {
 
       <div className="flex">
 
+
         {/* Sidebar */}
         <aside className="w-64 bg-white shadow-sm min-h-[calc(100vh-73px)]">
           <nav className="p-6 space-y-2">
@@ -112,3 +114,4 @@ export function AdminLayout() {
     </div>
   );
 }
+
