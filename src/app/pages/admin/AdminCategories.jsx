@@ -1,7 +1,11 @@
 import { useState } from 'react';
+
 import { useProducts } from '../../contexts/ProductContext';
+
 import { Plus, Trash2 } from 'lucide-react';
+
 import { toast } from 'sonner';
+
 
 export function AdminCategories() {
   const { categories, addCategory, deleteCategory, products } = useProducts();
@@ -24,6 +28,7 @@ export function AdminCategories() {
       toast.error('Không thể xóa danh mục có sản phẩm');
       return;
     }
+
     if (!window.confirm(`Bạn có chắc muốn xóa danh mục "${categoryName}" không?`)) {
       deleteCategory(categoryId);
       toast.success('Xóa danh mục thành công!');
