@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { LogIn, UserPlus } from "lucide-react";
 import { toast } from "sonner";
+
 // TODO: replace figma asset with local file
 import logoImage from '../../assets/fivepigslogo.png';
 
