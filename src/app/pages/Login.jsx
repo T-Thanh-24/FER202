@@ -3,21 +3,16 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { LogIn, UserPlus } from "lucide-react";
 import { toast } from "sonner";
+
 // TODO: replace figma asset with local file
 import logoImage from '../../assets/fivepigslogo.png';
 
 export function Login() {
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
-<<<<<<< HEAD
-    email: '',
-    password: '',
-    name: ''
-=======
     email: "",
     password: "",
     name: "",
->>>>>>> a5be6be9179ae1f1fe8dac638b3f9b5f60d4db72
   });
   const { login, register } = useAuth();
   const navigate = useNavigate();
