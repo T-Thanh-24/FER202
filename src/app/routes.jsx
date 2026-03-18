@@ -1,39 +1,40 @@
-import { createBrowserRouter } from 'react-router-dom';
-import { Layout } from './components/Layout';
-import { Cart } from './pages/Cart';
-import { Checkout } from './pages/Checkout';
-import { ForgetPassword } from './pages/ForgetPassword';
-import { Home } from './pages/Home';
-import { Login } from './pages/Login';
-import { NotFound } from './pages/NotFound';
-import { OrderDetail } from './pages/OrderDetail';
-import { Orders } from './pages/Orders';
-import { ProductDetail } from './pages/ProductDetail';
+import { createBrowserRouter } from "react-router-dom";
+import { Layout } from "./components/Layout";
+import { Home } from "./pages/Home";
+import { Products } from "./pages/Products";
+import { ProductDetail } from "./pages/ProductDetail";
 import { ProductReview } from './pages/ProductReview';
-import { Products } from './pages/Products';
-import { Profile } from './pages/Profile';
-
-import { AdminCategories } from './pages/admin/AdminCategories';
-import { AdminDashboard } from './pages/admin/AdminDashboard';
-import { AdminLayout } from './pages/admin/AdminLayout';
-import { AdminOrders } from './pages/admin/AdminOrders';
-import { AdminProducts } from './pages/admin/AdminProducts';
-import { AdminReports } from './pages/admin/AdminReports';
+import { Cart } from "./pages/Cart";
+import { Checkout } from "./pages/Checkout";
+import { Orders } from "./pages/Orders";
+import { OrderDetail } from "./pages/OrderDetail";
+import { Login } from "./pages/Login";
+import { NotFound } from "./pages/NotFound";
+import { AdminLayout } from "./pages/admin/AdminLayout";
+import { AdminDashboard } from "./pages/admin/AdminDashboard";
+import { AdminProducts } from "./pages/admin/AdminProducts";
+import { AdminOrders } from "./pages/admin/AdminOrders";
+import { AdminCategories } from "./pages/admin/AdminCategories";
+import { AdminReports } from "./pages/admin/AdminReports";
+import { ForgotPassword } from "./pages/ForgotPassword";
+import { Profile } from "./pages/Profile";
 export const router = createBrowserRouter([
   {
     path: "/",
     element: <Layout />,
     children: [
       { index: true, Component: Home },
-      { path: 'products', Component: Products },
-      { path: 'products/:id', Component: ProductDetail },
+      { path: "products", Component: Products },
+      { path: "products/:id", Component: ProductDetail },
       { path: 'products/:id/reviews', Component: ProductReview },
-      { path: 'cart', Component: Cart },
-      { path: 'checkout', Component: Checkout },
-      { path: 'orders', Component: Orders },
-      { path: 'orders/:id', Component: OrderDetail },
-      { path: 'login', Component: Login },
-      { path: '*', Component: NotFound }
+      { path: "cart", Component: Cart },
+      { path: "checkout", Component: Checkout },
+      { path: "orders", Component: Orders },
+      { path: "orders/:id", Component: OrderDetail },
+      { path: "login", Component: Login },
+      { path: "*", Component: NotFound },
+      { path: "forgot-password", Component: ForgotPassword },
+      { path: "profile", Component: Profile },
     ],
   },
   {
