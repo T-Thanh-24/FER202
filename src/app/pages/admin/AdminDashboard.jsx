@@ -1,8 +1,11 @@
+// Import custom hook để lấy danh sách sản phẩm từ ProductContext
 import { useProducts } from '../../contexts/ProductContext';
+// Import custom hook để lấy danh sách đơn hàng từ OrderContext
 import { useOrders } from '../../contexts/OrderContext';
+// Import các icon dùng để hiển thị UI dashboard
 import { Package, ShoppingBag, DollarSign, Users, TrendingUp } from 'lucide-react';
 
-
+// Khai báo component AdminDashboard
 export function AdminDashboard() {
   const { products } = useProducts();
   const { orders } = useOrders();
