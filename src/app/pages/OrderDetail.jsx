@@ -39,11 +39,24 @@ export function OrderDetail() {
   }
 
   const handleCancelOrder = () => {
-    // Đã thêm window. vào trước confirm để fix lỗi ESLint
     if (window.confirm('Bạn có chắc muốn hủy đơn hàng này?')) {
       cancelOrder(order.id);
     }
   };
+
+  // Tách logic màu sắc badge trạng thái cho code gọn gàng hơn
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'Pending': return 'bg-yellow-100 text-yellow-800';
+      case 'Confirmed': return 'bg-blue-100 text-blue-800';
+      case 'Shipped': return 'bg-purple-100 text-purple-800';
+      case 'Delivered': return 'bg-green-100 text-green-800';
+      default: return 'bg-red-100 text-red-800';
+    }
+  };
+
+  // Biến kiểm tra điều kiện cho phép đánh giá
+  const canReview = order.status === 'Shipped' || order.status === 'Delivered';
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -55,6 +68,7 @@ export function OrderDetail() {
         </div>
 
         <div className="bg-white rounded-lg shadow-sm p-8">
+          {/* Order Header */}
           <div className="flex items-center justify-between mb-6">
             <div>
               <h1 className="text-2xl font-bold mb-2">Chi tiết đơn hàng</h1>
@@ -62,13 +76,7 @@ export function OrderDetail() {
               <p className="text-sm text-gray-500">Đặt ngày: {formatDate(order.createdAt)}</p>
             </div>
             <div className="text-right">
-              <span className={`inline-block px-4 py-2 rounded-full font-medium ${
-                order.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
-                order.status === 'Confirmed' ? 'bg-blue-100 text-blue-800' :
-                order.status === 'Shipped' ? 'bg-purple-100 text-purple-800' :
-                order.status === 'Delivered' ? 'bg-green-100 text-green-800' :
-                'bg-red-100 text-red-800'
-              }`}>
+              <span className={`inline-block px-4 py-2 rounded-full font-medium ${getStatusColor(order.status)}`}>
                 {order.status}
               </span>
             </div>
@@ -79,7 +87,7 @@ export function OrderDetail() {
             <h2 className="font-semibold mb-4">Sản phẩm</h2>
             <div className="space-y-4">
               {order.items.map((item, index) => (
-                <div key={index} className="flex gap-4">
+                <div key={index} className="flex gap-4 items-center">
                   <img
                     src={item.product.image}
                     alt={item.product.name}
@@ -94,6 +102,16 @@ export function OrderDetail() {
                       {formatPrice(item.product.price * item.quantity)}
                     </p>
                   </div>
+                  
+                  {/* Nút đánh giá cho từng sản phẩm riêng lẻ */}
+                  {canReview && (
+                    <Link
+                      to={`/products/${item.product.id}/reviews`}
+                      className="text-sm font-medium text-green-600 hover:text-green-700 border border-green-600 px-4 py-2 rounded-md transition hover:bg-green-50"
+                    >
+                      Đánh giá
+                    </Link>
+                  )}
                 </div>
               ))}
             </div>
@@ -122,23 +140,36 @@ export function OrderDetail() {
             </p>
           </div>
 
-          {/* Total */}
+          {/* Total & Action Buttons */}
           <div className="border-t pt-6">
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex justify-between items-center mb-6">
               <span className="text-lg font-semibold">Tổng cộng:</span>
               <span className="text-2xl font-bold text-blue-600">
                 {formatPrice(order.totalPrice)}
               </span>
             </div>
 
-            {order.status === 'Pending' && (
-              <button
-                onClick={handleCancelOrder}
-                className="w-full bg-red-600 text-white py-3 rounded-lg hover:bg-red-700"
-              >
-                Hủy đơn hàng
-              </button>
-            )}
+            <div className="flex flex-col gap-3">
+              {/* Chỉ hiện thị nút hủy khi đơn hàng đang chờ */}
+              {order.status === 'Pending' && (
+                <button
+                  onClick={handleCancelOrder}
+                  className="w-full bg-red-600 text-white py-3 rounded-lg hover:bg-red-700 transition font-medium shadow-sm"
+                >
+                  Hủy đơn hàng
+                </button>
+              )}
+              
+              {/* Hiện thị nút đánh giá tổng khi đã giao */}
+              {canReview && (
+                <Link
+                  to={`/reviews/order/${order.id}`}
+                  className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 block text-center font-medium transition shadow-sm"
+                >
+                  Đánh giá đơn hàng này
+                </Link>
+              )}
+            </div>
           </div>
         </div>
       </div>

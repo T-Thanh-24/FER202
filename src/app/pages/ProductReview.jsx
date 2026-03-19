@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useProducts } from '../contexts/ProductContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -6,10 +6,9 @@ import { Star, ChevronRight, User, ThumbsUp, Image as ImageIcon, ArrowLeft } fro
 import { toast } from 'sonner';
 
 export function ProductReview() {
-    const { id } = useParams(); // Lấy ID sản phẩm từ thanh địa chỉ URL
+    const { id } = useParams();
     const navigate = useNavigate();
 
-    // Lấy các hàm từ Context của bạn
     const { getProduct, getReviewsByProductId, addReview } = useProducts();
     const { user } = useAuth();
 
@@ -18,18 +17,18 @@ export function ProductReview() {
     // --- STATE ---
     const [reviews, setReviews] = useState([]);
     const [isLoadingReviews, setIsLoadingReviews] = useState(true);
+    
+    // Thêm state cho bộ lọc
+    const [filterOption, setFilterOption] = useState("all"); // "all", "5", "4", "3", "2", "1"
 
-    // State cho form viết đánh giá
     const [rating, setRating] = useState(0);
     const [hoverRating, setHoverRating] = useState(0);
     const [reviewText, setReviewText] = useState("");
 
     // --- GỌI API LẤY BÌNH LUẬN ---
-    // ProductReview.jsx
     useEffect(() => {
         const fetchReviews = async () => {
             setIsLoadingReviews(true);
-            // Lấy phần trước dấu ":" để đảm bảo id chỉ là "1" chứ không phải "1:1"
             const cleanId = String(id).split(':')[0];
             const data = await getReviewsByProductId(cleanId);
             setReviews(data.reverse());
@@ -39,7 +38,19 @@ export function ProductReview() {
         if (id) fetchReviews();
     }, [id]);
 
-    // Nếu sai ID hoặc không có sản phẩm
+    // --- LOGIC LỌC ĐÁNH GIÁ ---
+    // Sử dụng useMemo để tính toán lại danh sách chỉ khi reviews hoặc filterOption thay đổi
+    const filteredReviews = useMemo(() => {
+        if (filterOption === "all") {
+            return reviews; // Mặc định là mới nhất (vì đã reverse() lúc fetch)
+        }
+        
+        // Lọc theo số sao cụ thể
+        const starCount = parseInt(filterOption, 10);
+        return reviews.filter(review => review.rating === starCount);
+    }, [reviews, filterOption]);
+
+
     if (!product) {
         return (
             <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center">
@@ -65,7 +76,7 @@ export function ProductReview() {
         }
 
         const newReview = {
-            productId: id, // Phải có ID sản phẩm để database biết bình luận này của SP nào
+            productId: Number(id),
             author: user.name || user.email || "Khách hàng",
             rating: rating,
             date: new Date().toLocaleDateString('vi-VN'),
@@ -73,14 +84,15 @@ export function ProductReview() {
             images: []
         };
 
-        // Gọi API thêm vào database
         const savedReview = await addReview(newReview);
 
         if (savedReview) {
             toast.success("Đánh giá của bạn đã được gửi thành công!");
-            setReviews([savedReview, ...reviews]); // Cập nhật giao diện ngay lập tức
+            setReviews([savedReview, ...reviews]);
             setRating(0);
             setReviewText("");
+            // Tùy chọn: Đặt lại bộ lọc về "all" để thấy ngay bình luận mới
+            setFilterOption("all"); 
         } else {
             toast.error("Lỗi khi lưu đánh giá. Vui lòng thử lại!");
         }
@@ -90,10 +102,10 @@ export function ProductReview() {
         <div className="min-h-screen bg-gray-50 py-8 font-sans">
             <div className="max-w-6xl mx-auto px-4">
 
-                {/* THANH ĐIỀU HƯỚNG BÊN TRÊN */}
+                {/* THANH ĐIỀU HƯỚNG BÊN TRÊN (Giữ nguyên) */}
                 <div className="flex items-center text-sm text-gray-500 mb-6 border-b border-gray-200 pb-4">
                     <button
-                        onClick={() => navigate(`/product/${id}`)}
+                        onClick={() => navigate(`/products/${id}`)}
                         className="flex items-center gap-1 hover:text-black mr-6 font-medium transition-colors bg-white px-3 py-1.5 rounded-lg border shadow-sm"
                     >
                         <ArrowLeft className="w-4 h-4" /> Quay lại sản phẩm
@@ -108,12 +120,10 @@ export function ProductReview() {
                     </span>
                 </div>
 
-                {/* BỐ CỤC CHÍNH (CHIA 2 CỘT) */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-                    {/* ================= CỘT TRÁI ================= */}
+                    {/* ================= CỘT TRÁI (Giữ nguyên) ================= */}
                     <div className="space-y-6">
-
                         {/* 1. Tóm tắt Sản phẩm */}
                         <div
                             className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex gap-4 cursor-pointer hover:shadow-md transition-shadow group"
@@ -140,7 +150,6 @@ export function ProductReview() {
                             <h3 className="font-bold text-lg mb-4">Viết đánh giá của bạn</h3>
 
                             <form onSubmit={handleSubmitReview}>
-                                {/* Chấm sao */}
                                 <div className="flex gap-1 mb-4">
                                     {[1, 2, 3, 4, 5].map((star) => (
                                         <button
@@ -153,9 +162,9 @@ export function ProductReview() {
                                         >
                                             <Star
                                                 className={`w-8 h-8 ${star <= (hoverRating || rating)
-                                                        ? "fill-yellow-400 text-yellow-400"
-                                                        : "text-gray-200"
-                                                    }`}
+                                                    ? "fill-yellow-400 text-yellow-400"
+                                                    : "text-gray-200"
+                                                }`}
                                             />
                                         </button>
                                     ))}
@@ -186,16 +195,26 @@ export function ProductReview() {
                     {/* ================= CỘT PHẢI ================= */}
                     <div className="lg:col-span-2 space-y-4">
 
-                        {/* Header Cột phải */}
+                        {/* Header Cột phải có SELECT FILTER */}
                         <div className="flex items-center justify-between bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
                             <h3 className="font-bold text-lg flex items-center gap-2">
+                                {/* Hiển thị số lượng dựa trên mảng ĐÃ LỌC */}
                                 Tất cả đánh giá
-                                <span className="text-gray-500 text-sm font-normal">({reviews.length} lượt)</span>
+                                <span className="text-gray-500 text-sm font-normal">({filteredReviews.length} lượt)</span>
                             </h3>
-                            <select className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black bg-white cursor-pointer">
-                                <option>Mới nhất</option>
-                                <option>5 sao</option>
-                                <option>1 sao</option>
+                            
+                            {/* Cập nhật thẻ select để thay đổi state */}
+                            <select 
+                                value={filterOption} 
+                                onChange={(e) => setFilterOption(e.target.value)}
+                                className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black bg-white cursor-pointer"
+                            >
+                                <option value="all">Mới nhất</option>
+                                <option value="5">5 sao</option>
+                                <option value="4">4 sao</option>
+                                <option value="3">3 sao</option>
+                                <option value="2">2 sao</option>
+                                <option value="1">1 sao</option>
                             </select>
                         </div>
 
@@ -206,17 +225,21 @@ export function ProductReview() {
                             </div>
                         )}
 
-                        {/* Trạng thái Trống (Chưa có đánh giá) */}
-                        {!isLoadingReviews && reviews.length === 0 && (
+                        {/* Trạng thái Trống (Chưa có đánh giá hoặc không có đánh giá nào khớp bộ lọc) */}
+                        {!isLoadingReviews && filteredReviews.length === 0 && (
                             <div className="bg-white p-12 rounded-2xl shadow-sm border border-gray-100 text-center text-gray-500 flex flex-col items-center">
                                 <Star className="w-12 h-12 text-gray-200 mb-3" />
-                                <p>Chưa có đánh giá nào.</p>
-                                <p className="text-sm">Hãy là người đầu tiên đánh giá sản phẩm này!</p>
+                                <p>Không có đánh giá nào.</p>
+                                {reviews.length > 0 && (
+                                    <p className="text-sm mt-2 text-blue-500 cursor-pointer" onClick={() => setFilterOption("all")}>
+                                        Hiển thị tất cả đánh giá
+                                    </p>
+                                )}
                             </div>
                         )}
 
-                        {/* Render Danh sách Review thật */}
-                        {!isLoadingReviews && reviews.map((review) => (
+                        {/* Render Danh sách Review TỪ MẢNG FILTEREDREVIEWS */}
+                        {!isLoadingReviews && filteredReviews.map((review) => (
                             <div key={review.id} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
 
                                 <div className="flex items-center justify-between mb-3">
