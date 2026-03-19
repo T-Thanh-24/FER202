@@ -4,45 +4,88 @@ const OrderContext = createContext();
 
 export const ORDER_STATUS = {
   PENDING: 'Pending',
-  PAID: 'Paid',
-  SHIPPING: 'Shipping',
+  CONFIRMED: 'Confirmed',
+  SHIPPED: 'Shipped',
   DELIVERED: 'Delivered',
   CANCELLED: 'Cancelled'
 };
 
 export function OrderProvider({ children }) {
-  const [orders, setOrders] = useState(() => {
-    const saved = localStorage.getItem('fivepigs_orders');
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [orders, setOrders] = useState([]);
+  const API_URL = 'http://localhost:9999/orders';
 
+  // Lấy toàn bộ đơn hàng từ database khi khởi động web
   useEffect(() => {
-    localStorage.setItem('fivepigs_orders', JSON.stringify(orders));
-  }, [orders]);
+    const fetchOrders = async () => {
+      try {
+        const response = await fetch(API_URL);
+        const data = await response.json();
+        setOrders(data);
+      } catch (error) {
+        console.error("Lỗi khi tải dữ liệu đơn hàng:", error);
+      }
+    };
+    fetchOrders();
+  }, []);
   
-  const createOrder = (orderData) => {
+  // Tạo đơn hàng mới (Gửi POST lên database)
+  const createOrder = async (orderData) => {
     const newOrder = {
       ...orderData,
       id: 'ORD-' + Date.now(),
       createdAt: new Date().toISOString(),
       status: orderData.status || ORDER_STATUS.PENDING
     };
-    setOrders((prev) => [...prev, newOrder]);
-    return newOrder.id;
+
+    try {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newOrder),
+      });
+
+      const savedOrder = await response.json();
+      
+      // Cập nhật lại state cục bộ để giao diện hiển thị ngay lập tức
+      setOrders((prev) => [...prev, savedOrder]);
+      return savedOrder.id;
+    } catch (error) {
+      console.error("Lỗi khi lưu đơn hàng:", error);
+      return null;
+    }
   };
 
-  const updateOrderStatus = (orderId, status) => {
-    setOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, status } : o)));
+  // Cập nhật trạng thái đơn hàng (Dùng PATCH để sửa 1 phần dữ liệu)
+  const updateOrderStatus = async (orderId, status) => {
+    try {
+      await fetch(`${API_URL}/${orderId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status }),
+      });
+
+      // Cập nhật lại UI
+      setOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, status } : o)));
+    } catch (error) {
+      console.error("Lỗi khi cập nhật trạng thái đơn hàng:", error);
+    }
   };
 
+  // Lọc đơn hàng theo ID người dùng
   const getUserOrders = (userId) => {
     return orders
-      .filter((o) => o.userId === userId)
+      .filter((o) => String(o.userId) === String(userId))
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   };
 
-  const getOrder = (orderId) => orders.find((o) => o.id === orderId);
+  // Lấy chi tiết 1 đơn hàng
+  const getOrder = (orderId) => orders.find((o) => String(o.id) === String(orderId));
 
+  // Hủy đơn hàng
   const cancelOrder = (orderId) => updateOrderStatus(orderId, ORDER_STATUS.CANCELLED);
 
   return (
