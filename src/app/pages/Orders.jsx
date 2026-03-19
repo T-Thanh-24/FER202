@@ -15,7 +15,6 @@ export function Orders() {
     }).format(price);
   };
 
-  // Đã chuyển thành toLocaleString để hợp lệ với hour/minute
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleString('vi-VN', {
       year: 'numeric',
@@ -28,35 +27,23 @@ export function Orders() {
 
   const getStatusIcon = (status) => {
     switch (status) {
-      case 'Pending':
-        return <Clock className="w-5 h-5 text-yellow-500" />;
-      case 'Confirmed':
-        return <CheckCircle className="w-5 h-5 text-blue-500" />;
-      case 'Shipped':
-        return <Truck className="w-5 h-5 text-purple-500" />;
-      case 'Delivered':
-        return <CheckCircle className="w-5 h-5 text-green-500" />;
-      case 'Cancelled':
-        return <XCircle className="w-5 h-5 text-red-500" />;
-      default:
-        return <Package className="w-5 h-5 text-gray-500" />;
+      case 'Pending': return <Clock className="w-5 h-5 text-yellow-500" />;
+      case 'Confirmed': return <CheckCircle className="w-5 h-5 text-blue-500" />;
+      case 'Shipped': return <Truck className="w-5 h-5 text-purple-500" />;
+      case 'Delivered': return <CheckCircle className="w-5 h-5 text-green-500" />;
+      case 'Cancelled': return <XCircle className="w-5 h-5 text-red-500" />;
+      default: return <Package className="w-5 h-5 text-gray-500" />;
     }
   };
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'Pending':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'Confirmed':
-        return 'bg-blue-100 text-blue-800';
-      case 'Shipped':
-        return 'bg-purple-100 text-purple-800';
-      case 'Delivered':
-        return 'bg-green-100 text-green-800';
-      case 'Cancelled':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
+      case 'Pending': return 'bg-yellow-100 text-yellow-800';
+      case 'Confirmed': return 'bg-blue-100 text-blue-800';
+      case 'Shipped': return 'bg-purple-100 text-purple-800';
+      case 'Delivered': return 'bg-green-100 text-green-800';
+      case 'Cancelled': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
   };
 

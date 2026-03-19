@@ -44,18 +44,17 @@ export function OrderDetail() {
     }
   };
 
-  // Tách logic màu sắc badge trạng thái cho code gọn gàng hơn
   const getStatusColor = (status) => {
     switch (status) {
       case 'Pending': return 'bg-yellow-100 text-yellow-800';
       case 'Confirmed': return 'bg-blue-100 text-blue-800';
       case 'Shipped': return 'bg-purple-100 text-purple-800';
       case 'Delivered': return 'bg-green-100 text-green-800';
-      default: return 'bg-red-100 text-red-800';
+      case 'Cancelled': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
   };
 
-  // Biến kiểm tra điều kiện cho phép đánh giá
   const canReview = order.status === 'Shipped' || order.status === 'Delivered';
 
   return (
@@ -82,7 +81,6 @@ export function OrderDetail() {
             </div>
           </div>
 
-          {/* Order Items */}
           <div className="border-t border-b py-6 mb-6">
             <h2 className="font-semibold mb-4">Sản phẩm</h2>
             <div className="space-y-4">
@@ -117,30 +115,29 @@ export function OrderDetail() {
             </div>
           </div>
 
-          {/* Shipping Info */}
-          <div className="mb-6">
-            <h2 className="font-semibold mb-3">Thông tin giao hàng</h2>
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <p className="font-medium">{order.shippingInfo.name}</p>
-              <p className="text-sm text-gray-600">{order.shippingInfo.phone}</p>
-              <p className="text-sm text-gray-600">
-                {order.shippingInfo.address}, {order.shippingInfo.city}
-              </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div>
+              <h2 className="font-semibold mb-3">Thông tin giao hàng</h2>
+              <div className="bg-gray-50 p-4 rounded-lg text-sm">
+                <p className="font-medium">{order.shippingInfo.name}</p>
+                <p>{order.shippingInfo.phone}</p>
+                <p>{order.shippingInfo.address}, {order.shippingInfo.city}</p>
+              </div>
+            </div>
+            
+            <div>
+              <h2 className="font-semibold mb-3">Phương thức thanh toán</h2>
+              <div className="bg-gray-50 p-4 rounded-lg text-sm">
+                <p className="text-gray-700">
+                  {order.paymentMethod === 'cod' ? 'Thanh toán khi nhận hàng (COD)' : 'Thẻ tín dụng/Ghi nợ'}
+                </p>
+                <p className={`font-medium mt-1 ${order.paymentStatus === 'Success' ? 'text-green-600' : 'text-red-600'}`}>
+                  Trạng thái: {order.paymentStatus === 'Success' ? 'Đã thanh toán' : 'Chưa thanh toán'}
+                </p>
+              </div>
             </div>
           </div>
 
-          {/* Payment Info */}
-          <div className="mb-6">
-            <h2 className="font-semibold mb-3">Phương thức thanh toán</h2>
-            <p className="text-gray-700">
-              {order.paymentMethod === 'cod' ? 'Thanh toán khi nhận hàng (COD)' : 'Thẻ tín dụng/Ghi nợ'}
-            </p>
-            <p className="text-sm text-gray-600">
-              Trạng thái: {order.paymentStatus === 'Success' ? 'Đã thanh toán' : 'Chưa thanh toán'}
-            </p>
-          </div>
-
-          {/* Total & Action Buttons */}
           <div className="border-t pt-6">
             <div className="flex justify-between items-center mb-6">
               <span className="text-lg font-semibold">Tổng cộng:</span>
@@ -150,24 +147,13 @@ export function OrderDetail() {
             </div>
 
             <div className="flex flex-col gap-3">
-              {/* Chỉ hiện thị nút hủy khi đơn hàng đang chờ */}
               {order.status === 'Pending' && (
                 <button
                   onClick={handleCancelOrder}
                   className="w-full bg-red-600 text-white py-3 rounded-lg hover:bg-red-700 transition font-medium shadow-sm"
                 >
-                  Hủy đơn hàng
+                Hủy đơn hàng
                 </button>
-              )}
-              
-              {/* Hiện thị nút đánh giá tổng khi đã giao */}
-              {canReview && (
-                <Link
-                  to={`/reviews/order/${order.id}`}
-                  className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 block text-center font-medium transition shadow-sm"
-                >
-                  Đánh giá đơn hàng này
-                </Link>
               )}
             </div>
           </div>
