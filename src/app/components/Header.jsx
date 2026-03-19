@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { ShoppingCart, User, LogOut, LayoutDashboard } from "lucide-react";
+import { ShoppingCart, User, LogOut, LayoutDashboard, NotebookPen } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { useCart } from "../contexts/CartContext";
 import { useState } from "react";
@@ -94,7 +94,7 @@ export function Header() {
                   </button>
 
                   <button className="btn" onClick={() => navigate("/orders")}>
-                    <User size={18} style={{ marginRight: 8 }} />
+                    <NotebookPen size={18} style={{ marginRight: 8 }} />
                     Đơn hàng
                   </button>
                 </>
