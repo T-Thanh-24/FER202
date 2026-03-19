@@ -7,21 +7,34 @@ import { Package, ShoppingBag, DollarSign, Users, TrendingUp } from 'lucide-reac
 
 // Khai báo component AdminDashboard
 export function AdminDashboard() {
+  // Lấy dữ liệu products từ context
   const { products } = useProducts();
+  // Lấy dữ liệu orders từ context
   const { orders } = useOrders();
 
+  // Tính tổng doanh thu (bỏ các đơn bị Cancelled)
   const totalRevenue = orders
+  // lọc đơn hợp lệ
     .filter(o => o.status !== 'Cancelled')
+    // cộng tổng tiền
     .reduce((sum, order) => sum + order.totalPrice, 0);
   
+    // Đếm tổng số sản phẩm
   const totalProducts = products.length;
+  // Đếm tổng số đơn hàng
   const totalOrders = orders.length;
+  // Đếm số đơn đang Pending (chờ xử lý)
   const pendingOrders = orders.filter(o => o.status === 'Pending').length;
 
+  // Hàm format tiền theo định dạng Việt Nam (VND)
   const formatPrice = (price) => {
+        // Sử dụng Intl để format số thành tiền VND
     return new Intl.NumberFormat('vi-VN', {
+      // Lấy 5 đơn hàng gần nhất (hiển thị trên dashboard)
       style: 'currency',
+        // Render giao diện dashboard
       currency: 'VND'
+      // Container chính với khoảng cách giữa các phần tử
     }).format(price);
   };
 
@@ -40,6 +53,7 @@ export function AdminDashboard() {
     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
       
       {/* Revenue */}
+      {/* Icon doanh thu */}
       <div className="bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transition duration-300 border border-gray-100">
         <div className="flex items-center justify-between mb-4">
           <div className="p-3 bg-blue-100 rounded-xl">
