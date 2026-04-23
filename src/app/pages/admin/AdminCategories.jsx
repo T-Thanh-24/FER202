@@ -29,7 +29,7 @@ export function AdminCategories() {
       return;
     }
 
-    if (!window.confirm(`Bạn có chắc muốn xóa danh mục "${categoryName}" không?`)) {
+    if (window.confirm(`Bạn có chắc muốn xóa danh mục "${categoryName}" không?`)) {
       deleteCategory(categoryId);
       toast.success('Xóa danh mục thành công!');
     }

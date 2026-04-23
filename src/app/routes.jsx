@@ -18,6 +18,7 @@ import { AdminCategories } from "./pages/admin/AdminCategories";
 import { AdminReports } from "./pages/admin/AdminReports";
 import { ForgotPassword } from "./pages/ForgotPassword";
 import { Profile } from "./pages/Profile";
+import { Wishlist } from "./pages/Wishlist";
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -35,6 +36,7 @@ export const router = createBrowserRouter([
       { path: "*", Component: NotFound },
       { path: "forgot-password", Component: ForgotPassword },
       { path: "profile", Component: Profile },
+      { path: "wishlist", Component: Wishlist },
     ],
   },
   {

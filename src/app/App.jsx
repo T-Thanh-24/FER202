@@ -4,18 +4,21 @@ import { AuthProvider } from './contexts/AuthContext';
 import { ProductProvider } from './contexts/ProductContext';
 import { CartProvider } from './contexts/CartContext';
 import { OrderProvider } from './contexts/OrderContext';
+import { WishlistProvider } from './contexts/WishlistContext';
 import { Toaster } from 'sonner';
 
 export default function App() {
   return (
     <AuthProvider>
       <ProductProvider>
-        <CartProvider>
-          <OrderProvider>
-            <RouterProvider router={router} />
-            <Toaster position="top-right" richColors />
-          </OrderProvider>
-        </CartProvider>
+        <WishlistProvider>
+          <CartProvider>
+            <OrderProvider>
+              <RouterProvider router={router} />
+              <Toaster position="top-right" richColors />
+            </OrderProvider>
+          </CartProvider>
+        </WishlistProvider>
       </ProductProvider>
     </AuthProvider>
   );

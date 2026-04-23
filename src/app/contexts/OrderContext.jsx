@@ -12,7 +12,7 @@ export const ORDER_STATUS = {
 
 export function OrderProvider({ children }) {
   const [orders, setOrders] = useState([]);
-  const API_URL = 'http://localhost:9999/orders';
+  const API_URL = 'http://localhost:3001/orders';
 
   // Lấy toàn bộ đơn hàng từ database khi khởi động web
   useEffect(() => {

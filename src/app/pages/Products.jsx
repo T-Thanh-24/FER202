@@ -30,7 +30,7 @@ export function Products() {
   };
 
   const filteredProducts = useMemo(() => {
-    let filtered = [...products];
+    let filtered = Array.isArray(products) ? [...products] : [];
 
     // Search
     if (searchQuery) {
@@ -135,20 +135,21 @@ export function Products() {
                 </label>
 
 
-                       {categories.map((cat) => (
-                 <label
-                           key={cat.id}
-                          className="flex items-center gap-2 cursor-pointer mt-2"
+                       {Array.isArray(categories) && categories.map((cat) => {
+                const catName = cat.name || cat;
+                return (
+                  <label key={cat.id || cat} className="flex items-center gap-2 cursor-pointer mt-2"
                        >
                       <input
-                         type="radio"
-                        name="category"
-                       checked={categoryFilter === cat.name}
-                             onChange={() => handleCategoryChange(cat.name)}
-                           />
-                    <span>{cat.name}</span>
-                            </label>
-                        ))}
+                          type="radio"
+                          name="category"
+                          checked={categoryFilter === catName}
+                          onChange={() => handleCategoryChange(catName)}
+                      />
+                      <span>{catName}</span>
+                  </label>
+                )
+              })}
               </div>
 
               {/* Price Filter*/}

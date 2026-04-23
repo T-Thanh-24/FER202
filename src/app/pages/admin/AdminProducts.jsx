@@ -128,7 +128,7 @@ export function AdminProducts() {
 
       toast.success("Xóa sản phẩm thành công!");
     } catch (error) {
-      toast.error("Xóa sản phẩm thất bại!");
+      toast.error(`Xóa sản phẩm thất bại: ${error.message || 'Lỗi không xác định'}`);
     }
   };
 

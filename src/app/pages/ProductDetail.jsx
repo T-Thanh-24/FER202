@@ -1,44 +1,44 @@
 import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useProducts } from '../contexts/ProductContext';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
-import { Star, ShoppingCart, Package, Truck, Shield } from 'lucide-react';
+import { useWishlist } from '../contexts/WishlistContext';
+import { Star, ShoppingCart, Package, Truck, Shield, Heart, ChevronRight, Zap } from 'lucide-react';
 import { toast } from 'sonner';
+import { ProductCard } from '../components/ProductCard';
 
 export function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { getProduct } = useProducts();
+  const { getProduct, products } = useProducts();
   const { addToCart } = useCart();
   const { user } = useAuth();
+  const { toggleWishlist, isWishlisted } = useWishlist();
   const product = getProduct(id);
 
   const [selectedSize, setSelectedSize] = useState('');
   const [quantity, setQuantity] = useState(1);
+  const wishlisted = product ? isWishlisted(product.id) : false;
 
   if (!product) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold mb-4">Không tìm thấy sản phẩm</h2>
+      <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ textAlign: 'center' }}>
+          <h2 style={{ fontSize: 24, fontWeight: 800, marginBottom: 12 }}>Không tìm thấy sản phẩm</h2>
           <button
             onClick={() => navigate('/products')}
-            className="text-blue-600 hover:underline"
+            style={{ color: '#2563eb', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}
           >
-            Quay lại danh sách sản phẩm
+            ← Quay lại danh sách sản phẩm
           </button>
         </div>
       </div>
     );
   }
 
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND'
-    }).format(price);
-  };
+  const formatPrice = (price) =>
+    new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
 
   const handleAddToCart = () => {
     if (!user) {
@@ -46,82 +46,184 @@ export function ProductDetail() {
       navigate('/login');
       return;
     }
-
     if (!selectedSize) {
       toast.error('Vui lòng chọn kích thước');
       return;
     }
-
     if (quantity > product.stock) {
       toast.error('Số lượng vượt quá hàng có sẵn');
       return;
     }
-
     addToCart(product, selectedSize, quantity);
     toast.success('Đã thêm vào giỏ hàng!');
   };
 
+  const handleBuyNow = () => {
+    if (!user) {
+      toast.error('Vui lòng đăng nhập để mua hàng');
+      navigate('/login');
+      return;
+    }
+    if (!selectedSize) {
+      toast.error('Vui lòng chọn kích thước');
+      return;
+    }
+    addToCart(product, selectedSize, quantity);
+    navigate('/checkout');
+  };
+
+  const handleWishlist = () => {
+    const added = toggleWishlist(product);
+    if (added) toast.success('Đã thêm vào danh sách yêu thích!');
+    else toast.info('Đã xóa khỏi danh sách yêu thích');
+  };
+
+  // Related products (same category, exclude current)
+  const relatedProducts = products
+    .filter(p => p.category === product.category && p.id !== product.id)
+    .slice(0, 4);
+
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-8">
+    <div style={{ minHeight: '100vh', background: '#f8fafc', padding: '24px 0 60px' }}>
+      <div className="container">
+        {/* Breadcrumb */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#6b7280', marginBottom: 24 }}>
+          <Link to="/" style={{ color: '#6b7280', textDecoration: 'none' }}>Trang chủ</Link>
+          <ChevronRight size={14} />
+          <Link to="/products" style={{ color: '#6b7280', textDecoration: 'none' }}>Sản phẩm</Link>
+          <ChevronRight size={14} />
+          <Link to={`/products?category=${encodeURIComponent(product.category)}`} style={{ color: '#6b7280', textDecoration: 'none' }}>
+            {product.category}
+          </Link>
+          <ChevronRight size={14} />
+          <span style={{ color: '#0f172a', fontWeight: 600 }}>{product.name}</span>
+        </div>
+
+        {/* Main Content */}
+        <div style={{
+          background: '#fff',
+          borderRadius: 20,
+          border: '1px solid #e5e7eb',
+          overflow: 'hidden',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
+          marginBottom: 32,
+        }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
             {/* Product Image */}
-            <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
+            <div style={{ position: 'relative', background: '#f8fafc' }}>
               <img
                 src={product.image}
                 alt={product.name}
-                className="w-full h-full object-cover"
+                style={{ width: '100%', height: '100%', objectFit: 'cover', minHeight: 450 }}
               />
+              {product.stock === 0 && (
+                <div style={{
+                  position: 'absolute',
+                  inset: 0,
+                  background: 'rgba(0,0,0,0.5)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                  <span style={{
+                    background: '#ef4444',
+                    color: '#fff',
+                    padding: '10px 24px',
+                    borderRadius: 12,
+                    fontSize: 18,
+                    fontWeight: 800,
+                  }}>
+                    Hết hàng
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Product Info */}
-            <div>
-              <div className="mb-4">
-                <span className="inline-block bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full">
+            <div style={{ padding: '36px 40px' }}>
+              <div style={{ marginBottom: 12 }}>
+                <Link
+                  to={`/products?category=${encodeURIComponent(product.category)}`}
+                  style={{
+                    display: 'inline-block',
+                    background: '#eff6ff',
+                    color: '#2563eb',
+                    padding: '4px 12px',
+                    borderRadius: 999,
+                    fontSize: 12,
+                    fontWeight: 700,
+                    textDecoration: 'none',
+                    marginBottom: 12,
+                  }}
+                >
                   {product.category}
-                </span>
+                </Link>
+                <h1 style={{ fontSize: 28, fontWeight: 900, margin: '0 0 12px', color: '#0f172a', lineHeight: 1.2 }}>
+                  {product.name}
+                </h1>
               </div>
 
-              <h1 className="text-3xl font-bold mb-4">{product.name}</h1>
-
-              <div className="flex items-center gap-4 mb-6">
-                <div className="flex items-center gap-1">
+              {/* Rating */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+                <div style={{ display: 'flex', gap: 2 }}>
                   {[...Array(5)].map((_, i) => (
                     <Star
                       key={i}
-                      className={`w-5 h-5 ${
-                        i < Math.floor(product.rating)
-                          ? 'fill-yellow-400 text-yellow-400'
-                          : 'text-gray-300'
-                      }`}
+                      size={18}
+                      fill={i < Math.floor(product.rating) ? '#f59e0b' : 'none'}
+                      color={i < Math.floor(product.rating) ? '#f59e0b' : '#d1d5db'}
                     />
                   ))}
                 </div>
-                <span className="text-sm text-gray-600">
-                  {product.rating} ({product.reviews} đánh giá)
-                </span>
+                <span style={{ fontWeight: 700, color: '#0f172a' }}>{product.rating}</span>
+                <span style={{ color: '#6b7280', fontSize: 14 }}>({product.reviews} đánh giá)</span>
+                {product.stock > 0 && (
+                  <span style={{
+                    background: '#f0fdf4',
+                    color: '#16a34a',
+                    padding: '2px 10px',
+                    borderRadius: 6,
+                    fontSize: 12,
+                    fontWeight: 600,
+                  }}>
+                    Còn {product.stock} sản phẩm
+                  </span>
+                )}
               </div>
 
-              <p className="text-3xl font-bold text-blue-600 mb-6">
-                {formatPrice(product.price)}
+              {/* Price */}
+              <div style={{ marginBottom: 20 }}>
+                <p style={{ fontSize: 34, fontWeight: 900, color: '#2563eb', margin: 0 }}>
+                  {formatPrice(product.price)}
+                </p>
+              </div>
+
+              <p style={{ color: '#4b5563', lineHeight: 1.7, marginBottom: 24, fontSize: 15 }}>
+                {product.description}
               </p>
 
-              <p className="text-gray-700 mb-6">{product.description}</p>
-
               {/* Size Selection */}
-              <div className="mb-6">
-                <label className="block font-medium mb-3">Chọn kích thước:</label>
-                <div className="flex gap-2">
+              <div style={{ marginBottom: 20 }}>
+                <label style={{ display: 'block', fontWeight: 800, marginBottom: 10, color: '#0f172a' }}>
+                  Chọn kích thước: {selectedSize && <span style={{ color: '#2563eb' }}>{selectedSize}</span>}
+                </label>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                   {product.sizes.map(size => (
                     <button
                       key={size}
                       onClick={() => setSelectedSize(size)}
-                      className={`px-4 py-2 border rounded-lg ${
-                        selectedSize === size
-                          ? 'border-blue-600 bg-blue-50 text-blue-600'
-                          : 'border-gray-300 hover:border-gray-400'
-                      }`}
+                      style={{
+                        padding: '10px 18px',
+                        border: '2px solid',
+                        borderColor: selectedSize === size ? '#2563eb' : '#e5e7eb',
+                        borderRadius: 10,
+                        fontWeight: 700,
+                        fontSize: 14,
+                        background: selectedSize === size ? '#eff6ff' : '#fff',
+                        color: selectedSize === size ? '#2563eb' : '#374151',
+                        cursor: 'pointer',
+                        transition: 'all 0.15s',
+                      }}
                     >
                       {size}
                     </button>
@@ -130,63 +232,141 @@ export function ProductDetail() {
               </div>
 
               {/* Quantity */}
-              <div className="mb-6">
-                <label className="block font-medium mb-3">Số lượng:</label>
-                <div className="flex items-center gap-3">
+              <div style={{ marginBottom: 24 }}>
+                <label style={{ display: 'block', fontWeight: 800, marginBottom: 10, color: '#0f172a' }}>Số lượng:</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 0, width: 'fit-content', border: '1px solid #e5e7eb', borderRadius: 10, overflow: 'hidden' }}>
                   <button
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="px-3 py-1 border rounded-lg hover:bg-gray-100"
+                    style={{ padding: '10px 16px', background: '#f8fafc', border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: 18 }}
                   >
-                    -
+                    −
                   </button>
-                  <input
-                    type="number"
-                    min="1"
-                    max={product.stock}
-                    value={quantity}
-                    onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                    className="w-20 px-3 py-1 border rounded-lg text-center"
-                  />
+                  <span style={{ padding: '10px 20px', fontWeight: 800, fontSize: 16, minWidth: 48, textAlign: 'center' }}>
+                    {quantity}
+                  </span>
                   <button
                     onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
-                    className="px-3 py-1 border rounded-lg hover:bg-gray-100"
+                    style={{ padding: '10px 16px', background: '#f8fafc', border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: 18 }}
                   >
                     +
                   </button>
-                  <span className="text-sm text-gray-600">
-                    ({product.stock} sẵn có)
-                  </span>
                 </div>
               </div>
 
-              {/* Add to Cart Button */}
-              <button
-                onClick={handleAddToCart}
-                disabled={product.stock === 0}
-                className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              >
-                <ShoppingCart className="w-5 h-5" />
-                {product.stock === 0 ? 'Hết hàng' : 'Thêm vào giỏ hàng'}
-              </button>
+              {/* Buttons */}
+              <div style={{ display: 'flex', gap: 10, marginBottom: 24, flexWrap: 'wrap' }}>
+                <button
+                  onClick={handleAddToCart}
+                  disabled={product.stock === 0}
+                  style={{
+                    flex: 1,
+                    minWidth: 160,
+                    background: product.stock === 0 ? '#e5e7eb' : '#fff',
+                    color: product.stock === 0 ? '#9ca3af' : '#2563eb',
+                    border: '2px solid',
+                    borderColor: product.stock === 0 ? '#e5e7eb' : '#2563eb',
+                    padding: '14px',
+                    borderRadius: 12,
+                    fontWeight: 800,
+                    fontSize: 15,
+                    cursor: product.stock === 0 ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 8,
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  <ShoppingCart size={18} />
+                  {product.stock === 0 ? 'Hết hàng' : 'Thêm vào giỏ'}
+                </button>
+
+                <button
+                  onClick={handleBuyNow}
+                  disabled={product.stock === 0}
+                  style={{
+                    flex: 1,
+                    minWidth: 160,
+                    background: product.stock === 0 ? '#e5e7eb' : 'linear-gradient(135deg, #2563eb, #7c3aed)',
+                    color: '#fff',
+                    border: 'none',
+                    padding: '14px',
+                    borderRadius: 12,
+                    fontWeight: 800,
+                    fontSize: 15,
+                    cursor: product.stock === 0 ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 8,
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  <Zap size={18} />
+                  Mua ngay
+                </button>
+
+                <button
+                  onClick={handleWishlist}
+                  style={{
+                    width: 52,
+                    background: wishlisted ? '#fff5f5' : '#fff',
+                    color: wishlisted ? '#ef4444' : '#6b7280',
+                    border: '2px solid',
+                    borderColor: wishlisted ? '#fecaca' : '#e5e7eb',
+                    borderRadius: 12,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.15s',
+                    flexShrink: 0,
+                  }}
+                >
+                  <Heart size={20} fill={wishlisted ? 'currentColor' : 'none'} />
+                </button>
+              </div>
 
               {/* Features */}
-              <div className="mt-8 grid grid-cols-3 gap-4 pt-8 border-t">
-                <div className="text-center">
-                  <Package className="w-8 h-8 mx-auto mb-2 text-blue-600" />
-                  <p className="text-xs text-gray-600">Miễn phí đổi trả</p>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, paddingTop: 20, borderTop: '1px solid #f1f5f9' }}>
+                <div style={{ textAlign: 'center' }}>
+                  <Package size={22} style={{ margin: '0 auto 6px', color: '#2563eb' }} />
+                  <p style={{ fontSize: 12, color: '#6b7280', margin: 0, fontWeight: 600 }}>Miễn phí đổi trả</p>
                 </div>
-                <div className="text-center">
-                  <Truck className="w-8 h-8 mx-auto mb-2 text-blue-600" />
-                  <p className="text-xs text-gray-600">Giao hàng nhanh</p>
+                <div style={{ textAlign: 'center' }}>
+                  <Truck size={22} style={{ margin: '0 auto 6px', color: '#2563eb' }} />
+                  <p style={{ fontSize: 12, color: '#6b7280', margin: 0, fontWeight: 600 }}>Giao hàng nhanh</p>
                 </div>
-                <div className="text-center">
-                  <Shield className="w-8 h-8 mx-auto mb-2 text-blue-600" />
-                  <p className="text-xs text-gray-600">Hàng chính hãng</p>
+                <div style={{ textAlign: 'center' }}>
+                  <Shield size={22} style={{ margin: '0 auto 6px', color: '#2563eb' }} />
+                  <p style={{ fontSize: 12, color: '#6b7280', margin: 0, fontWeight: 600 }}>Hàng chính hãng</p>
                 </div>
               </div>
             </div>
           </div>
         </div>
+
+        {/* Related Products */}
+        {relatedProducts.length > 0 && (
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+              <h2 style={{ fontSize: 22, fontWeight: 900, margin: 0, color: '#0f172a' }}>
+                Sản phẩm tương tự
+              </h2>
+              <Link
+                to={`/products?category=${encodeURIComponent(product.category)}`}
+                style={{ color: '#2563eb', fontWeight: 600, textDecoration: 'none', fontSize: 14 }}
+              >
+                Xem thêm →
+              </Link>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
+              {relatedProducts.map(p => (
+                <ProductCard key={p.id} product={p} />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
