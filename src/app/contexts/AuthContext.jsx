@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { api } from '../services/api';
 
 const AuthContext = createContext(undefined);
 
@@ -6,160 +7,122 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    // Load user from localStorage
-    const savedUser = localStorage.getItem('fivepigs_user');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
+    // Load session from localStorage
+    const savedUserId = localStorage.getItem('fivepigs_session');
+    if (savedUserId) {
+      api.get(`/users/${savedUserId}`).then(userData => {
+        if (userData) {
+          setUser(userData);
+        }
+      }).catch(err => {
+        console.error("Failed to restore session", err);
+        localStorage.removeItem('fivepigs_session');
+      });
     }
   }, []);
 
-  const login = (email, password) => {
-    // Get users from localStorage
-    const usersData = localStorage.getItem('fivepigs_users');
-    const users = usersData ? JSON.parse(usersData) : [];
-
-    // Admin account
-    if (email === 'admin@fivepigs.com' && password === 'admin123') {
-      const adminUser = {
-        id: 'admin',
-        email: 'admin@fivepigs.com',
-        name: 'Admin',
-        role: 'admin'
-      };
-      setUser(adminUser);
-      localStorage.setItem('fivepigs_user', JSON.stringify(adminUser));
-      return true;
-    }
-
-    // Check customer accounts
-    const foundUser = users.find((u) => u.email === email && u.password === password);
-    if (foundUser) {
-      const loggedInUser = {
-        id: foundUser.id,
-        email: foundUser.email,
-        name: foundUser.name,
-        role: 'customer'
-      };
-      setUser(loggedInUser);
-      localStorage.setItem('fivepigs_user', JSON.stringify(loggedInUser));
-      return true;
-    }
-
-    return false;
-  };
-
-  const register = (email, password, name) => {
-    const usersData = localStorage.getItem('fivepigs_users');
-    const users = usersData ? JSON.parse(usersData) : [];
-
-    // Check if email already exists
-    if (users.some((u) => u.email === email)) {
+  const login = async (email, password) => {
+    try {
+      const users = await api.get(`/users?email=${email}&password=${password}`);
+      if (users && users.length > 0) {
+        const loggedInUser = users[0];
+        setUser(loggedInUser);
+        localStorage.setItem('fivepigs_session', loggedInUser.id);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error("Login failed", error);
       return false;
     }
+  };
 
-    const newUser = {
-      id: Date.now().toString(),
-      email,
-      password,
-      name,
-      role: 'customer'
-    };
+  const register = async (email, password, name) => {
+    try {
+      const existingUsers = await api.get(`/users?email=${email}`);
+      if (existingUsers && existingUsers.length > 0) {
+        return false;
+      }
 
-    users.push(newUser);
-    localStorage.setItem('fivepigs_users', JSON.stringify(users));
+      const newUser = {
+        id: Date.now().toString(),
+        email,
+        password,
+        name,
+        role: 'customer',
+        cart: [],
+        wishlist: []
+      };
 
-    const loggedInUser = {
-      id: newUser.id,
-      email: newUser.email,
-      name: newUser.name,
-      role: 'customer'
-    };
-    setUser(loggedInUser);
-    localStorage.setItem('fivepigs_user', JSON.stringify(loggedInUser));
+      const createdUser = await api.post('/users', newUser);
+      setUser(createdUser);
+      localStorage.setItem('fivepigs_session', createdUser.id);
 
-    return true;
+      return true;
+    } catch (error) {
+      console.error("Registration failed", error);
+      return false;
+    }
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('fivepigs_user');
+    localStorage.removeItem('fivepigs_session');
   };
 
-  const resetPassword = (email, newPassword) => {
+  const resetPassword = async (email, newPassword) => {
     try {
-      // Admin account cannot reset password via this method
       if (email === 'admin@fivepigs.com') {
         return false;
       }
 
-      const usersData = localStorage.getItem('fivepigs_users');
-      const users = usersData ? JSON.parse(usersData) : [];
-
-      const userIndex = users.findIndex((u) => u.email === email);
-      if (userIndex === -1) {
+      const existingUsers = await api.get(`/users?email=${email}`);
+      if (!existingUsers || existingUsers.length === 0) {
         return false;
       }
 
-      users[userIndex].password = newPassword;
-      localStorage.setItem('fivepigs_users', JSON.stringify(users));
+      const userToUpdate = existingUsers[0];
+      await api.patch(`/users/${userToUpdate.id}`, { password: newPassword });
+      
       return true;
     } catch (error) {
+      console.error("Password reset failed", error);
       return false;
     }
   };
 
-  const updateProfile = (updatedData) => {
+  const updateProfile = async (updatedData) => {
     try {
       if (!user) return false;
 
-      // Admin account
-      if (user.role === 'admin') {
-        const updatedUser = {
-          ...user,
-          name: updatedData.name
-        };
-        setUser(updatedUser);
-        localStorage.setItem('fivepigs_user', JSON.stringify(updatedUser));
-        return true;
-      }
-
-      // Customer account
-      const usersData = localStorage.getItem('fivepigs_users');
-      const users = usersData ? JSON.parse(usersData) : [];
-
       // Check if new email already exists (if email changed)
       if (updatedData.email !== user.email) {
-        const emailExists = users.some(
-          (u) => u.email === updatedData.email && u.id !== user.id
-        );
-        if (emailExists) {
+        const existingUsers = await api.get(`/users?email=${updatedData.email}`);
+        if (existingUsers && existingUsers.length > 0) {
           return false;
         }
       }
 
-      const userIndex = users.findIndex((u) => u.id === user.id);
-      if (userIndex === -1) {
-        return false;
-      }
-
-      users[userIndex] = {
-        ...users[userIndex],
+      const updatedUser = await api.patch(`/users/${user.id}`, {
         name: updatedData.name,
         email: updatedData.email
-      };
-      localStorage.setItem('fivepigs_users', JSON.stringify(users));
+      });
 
-      const updatedUser = {
-        ...user,
-        name: updatedData.name,
-        email: updatedData.email
-      };
       setUser(updatedUser);
-      localStorage.setItem('fivepigs_user', JSON.stringify(updatedUser));
-
       return true;
     } catch (error) {
+      console.error("Profile update failed", error);
       return false;
+    }
+  };
+
+  // Keep API synchronization for internal state updates (like cart/wishlist)
+  const syncUserSession = async () => {
+    if (user) {
+      try {
+        const updatedUser = await api.get(`/users/${user.id}`);
+        setUser(updatedUser);
+      } catch (err) {}
     }
   };
 
@@ -171,6 +134,7 @@ export function AuthProvider({ children }) {
       logout,
       resetPassword,
       updateProfile,
+      syncUserSession,
       isAdmin: user?.role === 'admin'
     }}>
       {children}

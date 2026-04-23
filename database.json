@@ -1,4 +1,15 @@
 {
+  "users": [
+    {
+      "id": "admin",
+      "email": "admin@fivepigs.com",
+      "password": "admin123",
+      "name": "Admin",
+      "role": "admin",
+      "cart": [],
+      "wishlist": []
+    }
+  ],
   "categories": [
     {
       "id": "1",

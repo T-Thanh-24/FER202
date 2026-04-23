@@ -17,11 +17,11 @@ export function Login() {
   const { login, register } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (isLogin) {
-      const success = login(formData.email, formData.password);
+      const success = await login(formData.email, formData.password);
       if (success) {
         toast.success("Đăng nhập thành công!");
         // Check if admin
@@ -38,7 +38,7 @@ export function Login() {
         toast.error("Vui lòng nhập họ tên");
         return;
       }
-      const success = register(
+      const success = await register(
         formData.email,
         formData.password,
         formData.name,

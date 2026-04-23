@@ -1,30 +1,44 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { useAuth } from './AuthContext';
+import { api } from '../services/api';
 
 const WishlistContext = createContext(undefined);
 
 export function WishlistProvider({ children }) {
   const [wishlist, setWishlist] = useState([]);
+  const { user, syncUserSession } = useAuth();
 
   useEffect(() => {
-    const saved = localStorage.getItem('fivepigs_wishlist');
-    if (saved) {
-      try { setWishlist(JSON.parse(saved)); } catch {}
+    if (user) {
+      setWishlist(user.wishlist || []);
+    } else {
+      setWishlist([]);
     }
-  }, []);
+  }, [user]);
 
-  const save = (items) => {
-    setWishlist(items);
-    localStorage.setItem('fivepigs_wishlist', JSON.stringify(items));
+  const saveToDB = async (items) => {
+    if (user) {
+      try {
+        await api.patch(`/users/${user.id}`, { wishlist: items });
+        syncUserSession();
+      } catch (error) {
+        console.error("Failed to sync wishlist with DB", error);
+      }
+    }
   };
 
   const addToWishlist = (product) => {
     if (!wishlist.find(p => p.id === product.id)) {
-      save([...wishlist, product]);
+      const newWishlist = [...wishlist, product];
+      setWishlist(newWishlist);
+      saveToDB(newWishlist);
     }
   };
 
   const removeFromWishlist = (productId) => {
-    save(wishlist.filter(p => p.id !== productId));
+    const newWishlist = wishlist.filter(p => p.id !== productId);
+    setWishlist(newWishlist);
+    saveToDB(newWishlist);
   };
 
   const toggleWishlist = (product) => {

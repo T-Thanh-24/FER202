@@ -15,25 +15,27 @@ export function ForgotPassword() {
   const { resetPassword } = useAuth();
   const navigate = useNavigate();
 
-  const handleEmailSubmit = (e) => {
+  const handleEmailSubmit = async (e) => {
     e.preventDefault();
 
-    // Check if email exists in system
-    const usersData = localStorage.getItem('fivepigs_users');
-    const users = usersData ? JSON.parse(usersData) : [];
+    try {
+      const { api } = await import('../services/api');
+      const users = await api.get(`/users?email=${email}`);
+      const userExists = (users && users.length > 0) || email === 'admin@fivepigs.com';
 
-    const userExists = users.some((u) => u.email === email) || email === 'admin@fivepigs.com';
+      if (!userExists) {
+        toast.error('Email không tồn tại trong hệ thống');
+        return;
+      }
 
-    if (!userExists) {
-      toast.error('Email không tồn tại trong hệ thống');
-      return;
+      toast.success('Email hợp lệ! Vui lòng nhập mật khẩu mới');
+      setStep(2);
+    } catch (error) {
+      toast.error('Có lỗi xảy ra khi kiểm tra email');
     }
-
-    toast.success('Email hợp lệ! Vui lòng nhập mật khẩu mới');
-    setStep(2);
   };
 
-  const handlePasswordReset = (e) => {
+  const handlePasswordReset = async (e) => {
     e.preventDefault();
 
     if (newPassword.length < 6) {
@@ -46,7 +48,7 @@ export function ForgotPassword() {
       return;
     }
 
-    const success = resetPassword(email, newPassword);
+    const success = await resetPassword(email, newPassword);
 
     if (success) {
       toast.success('Đặt lại mật khẩu thành công!');

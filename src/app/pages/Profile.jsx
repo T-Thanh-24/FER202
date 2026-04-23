@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { useAuth } from "../contexts/AuthContext";
 
 export function Profile() {
-  const { user, updateProfile, logout } = useAuth();
+  const { user, updateProfile, resetPassword, logout } = useAuth();
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
@@ -31,7 +31,7 @@ export function Profile() {
     });
   }, [user, navigate]);
 
-  const handleProfileUpdate = (e) => {
+  const handleProfileUpdate = async (e) => {
     e.preventDefault();
 
     if (!formData.name.trim()) {
@@ -39,7 +39,7 @@ export function Profile() {
       return;
     }
 
-    const success = updateProfile({
+    const success = await updateProfile({
       name: formData.name,
       email: formData.email,
     });
@@ -52,23 +52,11 @@ export function Profile() {
     }
   };
 
-  const handlePasswordChange = (e) => {
+  const handlePasswordChange = async (e) => {
     e.preventDefault();
 
-    // Verify current password
-    const usersData = localStorage.getItem("fivepigs_users");
-    const users = usersData ? JSON.parse(usersData) : [];
-    const currentUser = users.find((u) => u.id === user.id);
-
-    if (user.role === "admin") {
-      if (passwordData.currentPassword !== "admin123") {
-        toast.error("Mật khẩu hiện tại không đúng");
-        return;
-      }
-    } else if (
-      !currentUser ||
-      currentUser.password !== passwordData.currentPassword
-    ) {
+    // Verify current password (user object from AuthContext has password)
+    if (passwordData.currentPassword !== user.password) {
       toast.error("Mật khẩu hiện tại không đúng");
       return;
     }
@@ -83,19 +71,17 @@ export function Profile() {
       return;
     }
 
-    // Update password in localStorage
-    if (user.role === "customer") {
-      const updatedUsers = users.map((u) =>
-        u.id === user.id ? { ...u, password: passwordData.newPassword } : u,
-      );
-      localStorage.setItem("fivepigs_users", JSON.stringify(updatedUsers));
+    try {
+      await resetPassword(user.email, passwordData.newPassword);
+      
+      toast.success("Đổi mật khẩu thành công! Vui lòng đăng nhập lại");
+      setTimeout(() => {
+        logout();
+        navigate("/login");
+      }, 1500);
+    } catch (error) {
+      toast.error("Đã xảy ra lỗi khi đổi mật khẩu");
     }
-
-    toast.success("Đổi mật khẩu thành công! Vui lòng đăng nhập lại");
-    setTimeout(() => {
-      logout();
-      navigate("/login");
-    }, 1500);
   };
 
   if (!user) {

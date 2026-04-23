@@ -1,22 +1,34 @@
 import { createContext, useContext, useState, useEffect, } from 'react';
+import { useAuth } from './AuthContext';
+import { api } from '../services/api';
 
 const CartContext = createContext(undefined);
 
 export function CartProvider({ children }) {
   const [items, setItems] = useState([]);
+  const { user, syncUserSession } = useAuth();
 
+  // Load cart when user changes
   useEffect(() => {
-    // Load cart from localStorage
-    const savedCart = localStorage.getItem('fivepigs_cart');
-    if (savedCart) {
-      setItems(JSON.parse(savedCart));
+    if (user) {
+      setItems(user.cart || []);
+    } else {
+      setItems([]);
     }
-  }, []);
+  }, [user]);
 
-  useEffect(() => {
-    // Save cart to localStorage whenever it changes
-    localStorage.setItem('fivepigs_cart', JSON.stringify(items));
-  }, [items]);
+  // Sync cart with DB whenever it changes
+  const updateCartInDB = async (newItems) => {
+    if (user) {
+      try {
+        await api.patch(`/users/${user.id}`, { cart: newItems });
+        // Optionally sync user session to keep AuthContext in sync
+        syncUserSession();
+      } catch (error) {
+        console.error("Failed to sync cart with DB", error);
+      }
+    }
+  };
 
   const addToCart = (product, size, quantity) => {
     setItems(currentItems => {
@@ -24,20 +36,25 @@ export function CartProvider({ children }) {
         item => item.product.id === product.id && item.size === size
       );
 
+      let newItems;
       if (existingItemIndex > -1) {
-        const newItems = [...currentItems];
+        newItems = [...currentItems];
         newItems[existingItemIndex].quantity += quantity;
-        return newItems;
       } else {
-        return [...currentItems, { product, size, quantity }];
+        newItems = [...currentItems, { product, size, quantity }];
       }
+      
+      updateCartInDB(newItems);
+      return newItems;
     });
   };
 
   const removeFromCart = (productId, size) => {
-    setItems(currentItems =>
-      currentItems.filter(item => !(item.product.id === productId && item.size === size))
-    );
+    setItems(currentItems => {
+      const newItems = currentItems.filter(item => !(item.product.id === productId && item.size === size));
+      updateCartInDB(newItems);
+      return newItems;
+    });
   };
 
   const updateQuantity = (productId, size, quantity) => {
@@ -46,17 +63,20 @@ export function CartProvider({ children }) {
       return;
     }
 
-    setItems(currentItems =>
-      currentItems.map(item =>
+    setItems(currentItems => {
+      const newItems = currentItems.map(item =>
         item.product.id === productId && item.size === size
           ? { ...item, quantity }
           : item
-      )
-    );
+      );
+      updateCartInDB(newItems);
+      return newItems;
+    });
   };
 
   const clearCart = () => {
     setItems([]);
+    updateCartInDB([]);
   };
 
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
